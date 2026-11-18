@@ -1596,6 +1596,14 @@ img.mv-ava{display:block;object-fit:cover;object-position:50% 20%;background:#f4
 #paste-box{flex:1 0 100%;width:100%;height:64px;margin-top:6px;border:1px solid #d9d6cc;border-radius:10px;padding:8px;font:12px/1.4 Inter,system-ui,sans-serif;resize:vertical;background:#fff;color:#313131}
 .dp-foot #paste{grid-column:1/-1;grid-row:auto;justify-self:end}
 .dp-foot #paste-box{grid-column:1/-1}
+/* 18.11b real Google map (vector, 3D): markers are AdvancedMarkerElement wrappers */
+.gm-mk{position:relative;width:0;height:0}
+.gm-mk>.leaflet-marker-icon{position:absolute;left:0;top:0;width:0;height:0}
+html.gnative #map{background:var(--land)}
+html.gnative #map .gm-style-cc,html.gnative #map .gmnoprint{opacity:.75}
+html.gnative #map .gm-mk .ml-group,html.gnative #map .gm-mk .ml-photo,html.gnative #map .gm-mk button{pointer-events:auto;cursor:pointer}
+/* 18.11c the home menu fits the phone – nothing left to scroll */
+.screen.home.fit-lock .fm-scroll{overflow-y:hidden!important;overscroll-behavior:none}
 
 /* Map labels */
 .lbl-wrap{width:0!important;height:0!important;background:none;border:0}
@@ -2307,7 +2315,7 @@ const STORE = 'abella-ml-test-v5';
 const ICON_LOCK = ['groupStyle', 'groupLabel', 'bColor', 'bSize', 'aColor', 'aSize', 'digitScale', 'digitWeight', 'glyphScale', 'whiteBorder', 'glow'];
 const GK = ['Bg', 'Pos', 'Text', 'GlassTone', 'Glass', 'Blur', 'Sat', 'Refract', 'Edge', 'Shadow', 'Radius', 'Fields', 'Dim'];
 const DEF = {
-  minZoom: 6, uProf: 'on', uHeart: 'on', uStyle: 'circle', uColor: '#ffbd47', uBg: '#ffffff', uSize: 40, uIcon: 20, uGap: 8, uShape: 50, uGlass: 30, uBlur: 10, uShadow: 16, uBadge: 'on', uBadgeC: '#ffbd47', vZoom: 10.5, vMin: 10, vMax: 15, vPanX: 14, vPanY: 12, vZoomLbl: 'off', fMapBlur: 6, fMapDim: 0, hSide: 22, hMTop: 84, hMBot: 14, hFill: 'all', hFillV: 1, xBtnMs: 220, xFieldMs: 240, xOverlap: 0, xCloseMs: 120, xCloseBtnMs: 260, xEase: 'smooth', xFly: 'fly', xFieldFx: 'fade', xFieldStag: 0, xRise: 8, xScroll: 'smooth', xScrollMs: 0, xLess: 'auto', xLessStyle: 'white', xGap: 8, xMask: 14, xMaskOff: 8, hFMax: 56, hGMax: 22, pmW: 114, pmRatio: 73, pmBg: '#ffffff', pmR: 10, pmPad: 0, pmPhR: 6, pmShadow: 22, pmShadowB: 14, pmArrow: 12, pmFs: 13, pmFw: 700, pmFc: '#25302a', pmSel: '#ffbd47', pmSelW: 3, pmSelS: 110, oTile: 'photo', oOpen: 'scale', oGrpMs: 440, oGrpGap: 200, oOpenMs: 580, oEase: 'smooth', oRise: 40, oTSpeed: 600, oPage: 'sheet', oTabX: 'on', oAnim: 'slide', oSpeed: 520, nWidth: 'card', nGlassTone: 'light', nGlass: 100, nBlur: 0, nSat: 100, nRefract: 0, nEdge: 0, nShadow: 0, nRadius: 11, nText: 'dark', nDim: 0, nAnim: 'slide', nSpeed: 260, mPrice: 0, mDown: 10, mTerm: 25, mRate: 2.25, railLink: 'highlight', railLine: false, railPulse: false, cdLine: 24, cdSide: 12, railFx: 'lift', railScale: 105, railShadow: 22, railShadowBlur: 26, railFrame: 'fade', railFrameMs: 250, railEmerge: 0, panKm: 10, panX: 80, panY: 80, clusterPx: 64, bigGroup: 50, photoZoom: 17, tiltZoom: 17, tiltDeg: 45, showZoom: true,
+  minZoom: 6, uProf: 'on', uHeart: 'on', uStyle: 'circle', uColor: '#ffbd47', uBg: '#ffffff', uSize: 40, uIcon: 20, uGap: 8, uShape: 50, uGlass: 30, uBlur: 10, uShadow: 16, uBadge: 'on', uBadgeC: '#ffbd47', vZoom: 10.5, vMin: 10, vMax: 15, vPanX: 14, vPanY: 12, vZoomLbl: 'off', fMapBlur: 6, fMapDim: 0, hSide: 22, hMTop: 84, hMBot: 14, hFill: 'all', hFillV: 1, xBtnMs: 220, xFieldMs: 240, xOverlap: 0, xCloseMs: 120, xCloseBtnMs: 260, xEase: 'smooth', xFly: 'fly', xFieldFx: 'fade', xFieldStag: 0, xRise: 8, xScroll: 'smooth', xScrollMs: 0, xLess: 'auto', xLessStyle: 'white', xGap: 8, xMask: 14, xMaskOff: 8, hFMax: 56, hGMax: 22, pmW: 114, pmRatio: 73, pmBg: '#ffffff', pmR: 10, pmPad: 0, pmPhR: 6, pmShadow: 22, pmShadowB: 14, pmArrow: 12, pmFs: 13, pmFw: 700, pmFc: '#25302a', pmSel: '#ffbd47', pmSelW: 3, pmSelS: 110, oTile: 'photo', oOpen: 'scale', oGrpMs: 440, oGrpGap: 200, oOpenMs: 580, oEase: 'smooth', oRise: 40, oTSpeed: 600, oPage: 'sheet', oTabX: 'on', oAnim: 'slide', oSpeed: 520, nWidth: 'card', nGlassTone: 'light', nGlass: 100, nBlur: 0, nSat: 100, nRefract: 0, nEdge: 0, nShadow: 0, nRadius: 11, nText: 'dark', nDim: 0, nAnim: 'slide', nSpeed: 260, mPrice: 0, mDown: 10, mTerm: 25, mRate: 2.25, railLink: 'highlight', railLine: false, railPulse: false, cdLine: 24, cdSide: 12, railFx: 'lift', railScale: 105, railShadow: 22, railShadowBlur: 26, railFrame: 'fade', railFrameMs: 250, railEmerge: 0, panKm: 10, panX: 80, panY: 80, clusterPx: 64, bigGroup: 50, photoZoom: 17, tiltZoom: 17, tiltDeg: 45, tiltMs: 650, showZoom: true,
   groupStyle: 'orange', groupLabel: 'iconcount',
   bColor: '#ffbd47', bSize: 45, aColor: '#ffffff', aSize: 45, digitScale: 115, digitWeight: 700, glyphScale: 110,
   whiteBorder: true, glow: false, photoSize: 'm', selFrame: 'orange', device: 'phone', iModel: '17p', aModel: 's26',
@@ -2549,13 +2557,135 @@ const numOnly = n => { const s = String(n), d = Math.min(4, s.length) - 1; retur
 
 /* ---------------- Map ---------------- */
 const root = $('#ml-root');
-const map = L.map('map', {zoomControl: false, attributionControl: false, zoomSnap: 0, zoomDelta: .5, wheelPxPerZoomLevel: 110, minZoom: S.minZoom, maxZoom: MAXZ, center: [(WN.north + WN.south) / 2, (WN.west + WN.east) / 2], zoom: 12, tap: false});
-window.abellaMap = map;
-/* Google Maps under the same map (for the site): set window.ABELLA_GMAPS_KEY before this script.
-   Without a key the page keeps its own drawn map of Sofia. */
+/* Google Maps (for the site): set window.ABELLA_GMAPS_KEY before this script. Without a key the page keeps its own drawn map of Sofia.
+   18.11: with a key the map is the real (vector) Google map, as on demo.abella.bg – 3D buildings, real tilt. A small adapter keeps
+   the Leaflet-style calls of this page working on top of it. window.ABELLA_GMAPS_MODE = 'flat' brings back the older flat Google layer. */
 const GMAPS_KEY = (typeof window !== 'undefined' && window.ABELLA_GMAPS_KEY) || '';
+const GNATIVE = !!GMAPS_KEY && window.ABELLA_GMAPS_MODE !== 'flat';
+const GMAP_ID = window.ABELLA_GMAPS_MAPID || 'aa588ec1085e1376e676b048'; /* the Map ID of demo.abella.bg (vector, Abella style) */
+const gReady = GMAPS_KEY ? new Promise((res, rej) => {
+  window.__abellaGmapsReady = res;
+  const t = document.createElement('script'); t.onerror = rej;
+  t.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GMAPS_KEY)}&v=weekly&language=bg&region=BG&loading=async&libraries=marker&callback=__abellaGmapsReady`;
+  document.head.append(t);
+}) : null;
+if (GMAPS_KEY) document.documentElement.classList.add('gmaps');
+if (GNATIVE) document.documentElement.classList.add('gnative');
+
+class GMapLL { /* Leaflet-like map over google.maps.Map (only what this page uses) */
+  constructor(el, o) {
+    this._el = typeof el === 'string' ? document.getElementById(el) : el;
+    this._c = L.latLng(o.center); this._z = o.zoom; this._min = o.minZoom; this._max = o.maxZoom;
+    this._ev = {}; this._loaded = false; this._animatingZoom = false; this.options = {};
+    this._panes = {};
+    this.doubleClickZoom = {enable: () => this._set({disableDoubleClickZoom: false}), disable: () => this._set({disableDoubleClickZoom: true})};
+    this._ready = gReady.then(() => Promise.all([google.maps.importLibrary('maps'), google.maps.importLibrary('marker')])).then(() => this._init());
+  }
+  _init() {
+    const g = this._g = new google.maps.Map(this._el, {center: {lat: this._c.lat, lng: this._c.lng}, zoom: this._z, minZoom: this._min, maxZoom: this._max,
+      mapId: GMAP_ID, renderingType: google.maps.RenderingType.VECTOR, isFractionalZoomEnabled: true, gestureHandling: 'greedy',
+      disableDefaultUI: true, clickableIcons: false, keyboardShortcuts: false, tilt: 0, heading: 0, headingInteractionEnabled: false, tiltInteractionEnabled: false,
+      ...(this._restr ? {restriction: this._restr} : {})});
+    const ov = this._ov = new google.maps.OverlayView(); ov.onAdd = ov.onRemove = () => {}; ov.draw = () => {}; ov.setMap(g);
+    let lastZ = this._z;
+    g.addListener('zoom_changed', () => { this._z = g.getZoom(); this._fire('zoom'); });
+    g.addListener('center_changed', () => { const c = g.getCenter(); this._c = L.latLng(c.lat(), c.lng()); this._fire('move'); });
+    g.addListener('idle', () => { const first = !this._loaded; this._loaded = true; this._fire('moveend'); if (first || g.getZoom() !== lastZ) { lastZ = g.getZoom(); this._fire('zoomend'); } });
+    g.addListener('click', e => { if (Date.now() - (this._mkAt || 0) < 350 || !e.latLng) return; this._fire('click', {latlng: L.latLng(e.latLng.lat(), e.latLng.lng())}); });
+    (this._pend || []).forEach(l => this.addLayer(l)); this._pend = null;
+  }
+  _set(o) { Object.assign(this._opt || (this._opt = {}), o); if (this._g) this._g.setOptions(o); }
+  _fire(t, e = {}) { (this._ev[t] || []).slice().forEach(f => f.call(this, Object.assign({type: t, target: this}, e))); }
+  on(types, f) { types.split(/\s+/).forEach(t => (this._ev[t] || (this._ev[t] = [])).push(f)); return this; }
+  off(types, f) { types.split(/\s+/).forEach(t => { this._ev[t] = (this._ev[t] || []).filter(x => x !== f); }); return this; }
+  whenReady(f) { this._ready.then(() => f.call(this)); return this; }
+  getContainer() { return this._el; }
+  getZoom() { return this._g ? this._g.getZoom() : this._z; }
+  getMaxZoom() { return this._max; }
+  getMinZoom() { return this._min; }
+  getCenter() { if (this._g) { const c = this._g.getCenter(); return L.latLng(c.lat(), c.lng()); } return this._c; }
+  getSize() { return L.point(this._el.clientWidth, this._el.clientHeight); }
+  getBounds() { const b = this._g && this._g.getBounds(); if (!b) return L.latLngBounds(this._c, this._c); const sw = b.getSouthWest(), ne = b.getNorthEast(); return L.latLngBounds([sw.lat(), sw.lng()], [ne.lat(), ne.lng()]); }
+  getTilt() { return this._g ? this._g.getTilt() || 0 : 0; }
+  setMinZoom(z) { this._min = z; this._set({minZoom: z}); return this; }
+  setMaxZoom(z) { this._max = z; this._set({maxZoom: z}); return this; }
+  setZoom(z) { this._z = z; if (this._g) this._g.setZoom(z); return this; }
+  setView(c, z, o) { c = L.latLng(c); this._c = c; if (z != null) this._z = z; if (this._g) this._g.moveCamera({center: {lat: c.lat, lng: c.lng}, zoom: this._z}); return this; }
+  flyTo(c, z, o = {}) {
+    c = L.latLng(c); if (!this._g) return this.setView(c, z);
+    const g = this._g, f = this.getCenter(), fz = g.getZoom(), ms = (o.duration || .6) * 1000, t0 = performance.now();
+    cancelAnimationFrame(this._fly);
+    const step = now => { const k = Math.min(1, (now - t0) / ms), e = k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+      g.moveCamera({center: {lat: f.lat + (c.lat - f.lat) * e, lng: f.lng + (c.lng - f.lng) * e}, zoom: fz + (z - fz) * e}); if (k < 1) this._fly = requestAnimationFrame(step); };
+    this._fly = requestAnimationFrame(step); return this;
+  }
+  panInside(ll, o = {}) {
+    if (!this._g) return this; const p = this.latLngToContainerPoint(ll), s = this.getSize();
+    const tl = o.paddingTopLeft || [0, 0], br = o.paddingBottomRight || [0, 0];
+    let dx = 0, dy = 0;
+    if (p.x < tl[0]) dx = p.x - tl[0]; else if (p.x > s.x - br[0]) dx = p.x - (s.x - br[0]);
+    if (p.y < tl[1]) dy = p.y - tl[1]; else if (p.y > s.y - br[1]) dy = p.y - (s.y - br[1]);
+    if (dx || dy) this._g.panBy(Math.round(dx), Math.round(dy)); return this;
+  }
+  latLngToContainerPoint(ll) {
+    ll = L.latLng(ll); const pr = this._ov && this._ov.getProjection();
+    if (pr) { const p = pr.fromLatLngToContainerPixel(new google.maps.LatLng(ll.lat, ll.lng)); if (p) return L.point(p.x, p.y); }
+    const z = this.getZoom(), c = this.project(this.getCenter(), z), q = this.project(ll, z), s = this.getSize(); return L.point(q.x - c.x + s.x / 2, q.y - c.y + s.y / 2);
+  }
+  project(ll, z) { ll = L.latLng(ll); const k = 256 * 2 ** z, sn = Math.sin(ll.lat * Math.PI / 180); return L.point((ll.lng + 180) / 360 * k, (.5 - Math.log((1 + sn) / (1 - sn)) / (4 * Math.PI)) * k); }
+  unproject(p, z) { const k = 256 * 2 ** z, n = Math.PI - 2 * Math.PI * p.y / k; return L.latLng(180 / Math.PI * Math.atan(.5 * (Math.exp(n) - Math.exp(-n))), p.x / k * 360 - 180); }
+  setMaxBounds(b) { b = L.latLngBounds(b); this._restr = {latLngBounds: {north: b.getNorth(), south: b.getSouth(), east: b.getEast(), west: b.getWest()}, strictBounds: false}; this._set({restriction: this._restr}); return this; }
+  invalidateSize() { return this; }
+  createPane(n) { return this._panes[n] || (this._panes[n] = document.createElement('div')); }
+  getPane(n) { return this.createPane(n || 'x'); }
+  hasLayer(l) { return !!l && l._map === this; }
+  moveTilt(t, ms = 650) { /* animated camera tilt (as on demo.abella.bg) */
+    if (!this._g) return; cancelAnimationFrame(this._tf); const g = this._g, f = g.getTilt() || 0, t0 = performance.now();
+    if (ms <= 0) { g.moveCamera({tilt: t}); return; }
+    const step = now => { const k = Math.min(1, (now - t0) / ms), e = k < .5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2; g.moveCamera({tilt: f + (t - f) * e}); if (k < 1) this._tf = requestAnimationFrame(step); };
+    this._tf = requestAnimationFrame(step);
+  }
+  addLayer(l) {
+    l._map = this; l._mapToAdd = this;
+    if (l instanceof L.LayerGroup) { l.eachLayer(x => this.addLayer(x)); return this; }
+    if (!this._g) { (this._pend || (this._pend = [])).push(l); return this; }
+    if (l._gObj) return this;
+    const C = google.maps;
+    if (l instanceof L.Marker) {
+      const io = l.options.icon && l.options.icon.options || {}, wrap = document.createElement('div'), ic = document.createElement('div');
+      wrap.className = 'leaflet-marker-pane gm-mk' + (l.options.pane === 'labels' ? ' gm-lbl' : ''); ic.className = 'leaflet-marker-icon ' + (io.className || '');
+      if (io.html instanceof Element) ic.append(io.html); else ic.innerHTML = io.html || '';
+      wrap.append(ic); l._icon = ic;
+      if (l.options.interactive !== false) { ic.addEventListener('pointerdown', () => { this._mkAt = Date.now(); }); ic.addEventListener('click', ev => { this._mkAt = Date.now(); ev.stopPropagation(); l.fire('click', {originalEvent: ev, latlng: l.getLatLng()}); }); }
+      const ll = l.getLatLng();
+      l._gObj = new C.marker.AdvancedMarkerElement({map: this._g, position: {lat: ll.lat, lng: ll.lng}, content: wrap, zIndex: 1000 + (l.options.zIndexOffset || 0), gmpClickable: l.options.interactive !== false}); /* without gmpClickable Google lets taps fall through to the map */
+    } else if (l instanceof L.CircleMarker) {
+      const o = l.options, ll = l.getLatLng(), r = o.radius || 6, d = document.createElement('div'), w = document.createElement('div');
+      d.style.cssText = `position:absolute;left:${-r}px;top:${-r}px;width:${2 * r}px;height:${2 * r}px;border-radius:50%;box-sizing:border-box;background:${o.fillColor || '#fff'};border:${o.weight || 3}px solid ${o.color || '#ffbd47'};pointer-events:none`;
+      w.className = 'gm-mk'; w.append(d);
+      l._gObj = new C.marker.AdvancedMarkerElement({map: this._g, position: {lat: ll.lat, lng: ll.lng}, content: w, zIndex: 5000});
+    } else if (l instanceof L.Polygon || l instanceof L.Polyline) {
+      const o = l.options, path = ls => ls.map(p => ({lat: p.lat, lng: p.lng})), lls = l.getLatLngs(), poly = l instanceof L.Polygon || o.fill;
+      const flat = Array.isArray(lls[0]) ? lls[0] : lls;
+      const common = {map: this._g, strokeColor: o.color || '#ffbd47', strokeOpacity: o.stroke === false ? 0 : (o.opacity ?? 1), strokeWeight: o.weight ?? 3, clickable: false, zIndex: 50};
+      l._gObj = poly ? new C.Polygon({...common, paths: path(flat), fillColor: o.fillColor || o.color, fillOpacity: o.fillOpacity ?? .2})
+        : new C.Polyline({...common, path: path(flat)});
+    }
+    return this;
+  }
+  removeLayer(l) {
+    if (!l) return this;
+    if (l instanceof L.LayerGroup) { l.eachLayer(x => this.removeLayer(x)); l._map = null; return this; }
+    if (this._pend) this._pend = this._pend.filter(x => x !== l);
+    if (l._gObj) { if (l._gObj instanceof google.maps.marker.AdvancedMarkerElement) l._gObj.map = null; else l._gObj.setMap(null); l._gObj = null; }
+    l._map = null; l._icon = null; return this;
+  }
+}
+const map = GNATIVE
+  ? new GMapLL('map', {minZoom: S.minZoom, maxZoom: MAXZ, center: [(WN.north + WN.south) / 2, (WN.west + WN.east) / 2], zoom: 12})
+  : L.map('map', {zoomControl: false, attributionControl: false, zoomSnap: 0, zoomDelta: .5, wheelPxPerZoomLevel: 110, minZoom: S.minZoom, maxZoom: MAXZ, center: [(WN.north + WN.south) / 2, (WN.west + WN.east) / 2], zoom: 12, tap: false});
+window.abellaMap = map;
 if (GMAPS_KEY) {
-  document.documentElement.classList.add('gmaps');
   const STYLE_ABELLA = [
     {featureType: 'poi', stylers: [{visibility: 'off'}]}, {featureType: 'transit', stylers: [{visibility: 'off'}]},
     {elementType: 'geometry', stylers: [{color: '#f3f2ed'}]}, {elementType: 'labels.icon', stylers: [{visibility: 'off'}]},
@@ -2568,11 +2698,10 @@ if (GMAPS_KEY) {
     {featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{color: '#dfae4a'}]},
     {featureType: 'water', elementType: 'geometry', stylers: [{color: '#bfdbe6'}]},
   ];
-  const style = window.ABELLA_GMAPS_STYLE === 'google' ? [] : STYLE_ABELLA;
-  const addMutant = () => L.gridLayer.googleMutant({type: 'roadmap', styles: style, maxZoom: 21}).addTo(map);
+  window.ABELLA_GSTYLE = window.ABELLA_GMAPS_STYLE === 'google' ? [] : STYLE_ABELLA;
   const load = (src, cb) => { const t = document.createElement('script'); t.src = src; t.onload = cb; document.head.append(t); };
-  window.__abellaGmapsReady = () => load('https://unpkg.com/leaflet.gridlayer.googlemutant@0.14.1/dist/Leaflet.GoogleMutant.js', addMutant);
-  load(`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GMAPS_KEY)}&v=weekly&language=bg&region=BG&loading=async&callback=__abellaGmapsReady`);
+  /* the flat Google layer (GoogleMutant) – for the valuation map, and for the main map only in 'flat' mode */
+  gReady.then(() => load('https://unpkg.com/leaflet.gridlayer.googlemutant@0.14.1/dist/Leaflet.GoogleMutant.js', () => { if (!GNATIVE) L.gridLayer.googleMutant({type: 'roadmap', styles: window.ABELLA_GSTYLE, maxZoom: 21}).addTo(map); }));
 }
 let OSM_BASE = null; /* the drawn base map, reused by the valuation map */
 map.createPane('base').style.zIndex = 200;
@@ -2656,6 +2785,7 @@ function styleRoads(force) {
 }
 
 function renderLabels() {
+  if (typeof GNATIVE !== 'undefined' && GNATIVE) return; /* the Google map has its own labels */
   labelLayer.clearLayers();
   const z = map.getZoom(), bounds = map.getBounds().pad(.05), used = [], seen = new Set();
   const cands = labelCands.filter(c => z >= c.minZ && !(c.kind === 'place' && z >= 17.5) && bounds.contains([c.lat, c.lng])).sort((a, b) => a.prio - b.prio);
@@ -3067,13 +3197,13 @@ function markerHtml(e, z, selId) {
 function renderMarkers() {
   if (!map._loaded) return;
   const z = map.getZoom(), sz = map.getSize(), f = sz.x, p = sz.y, c = map.getCenter(), a = ni(c.lat, c.lng), l = 2 ** (z - NS), o = {x: f / 2, y: p / 2};
-  const m = photoMode(z), u = m ? LL + 1 : z, g = {x: m ? f : 80, y: m ? p : 80};
+  const m = photoMode(z), u = m ? LL + 1 : z, g = {x: m ? f : 80, y: m ? p : 80}, up = GNATIVE && map.getTilt() > 5 ? p * 1.2 : 0;
   let v = [];
   [...atZoom(ML.bTree, u) || [], ...atZoom(ML.pTree, u) || []].forEach(b => {
     const T = (b.x - a.x) * l + o.x, Y = (b.y - a.y) * l + o.y;
-    if (T > -g.x && T < f + g.x && Y > -g.y && Y < p + g.y) v.push({sx: T, sy: Y, nb: b.nb, na: b.na, item: b.item, items: b.item ? [b.item] : leaves(b)});
+    if (T > -g.x && T < f + g.x && Y > -g.y - up && Y < p + g.y) v.push({sx: T, sy: Y, nb: b.nb, na: b.na, item: b.item, items: b.item ? [b.item] : leaves(b)});
   });
-  if (m) { ML.photoOffsets = declutterPhotos(v, ML.photoOffsets); v = v.filter(b => b.sx > -150 && b.sx < f + 150 && b.sy > -150 && b.sy < p + 150); }
+  if (m) { ML.photoOffsets = declutterPhotos(v, ML.photoOffsets); v = v.filter(b => b.sx > -150 && b.sx < f + 150 && b.sy > -150 - up && b.sy < p + 150); }
   else v = declutter(v);
   v.forEach(b => { b.wx = (b.sx - o.x) / l + a.x; b.wy = (b.sy - o.y) / l + a.y; });
   v.sort((b, T) => b.sy - T.sy);
@@ -3157,7 +3287,7 @@ function onMarker(e) {
 function syncZoom() { const e = q('.ml-zoom'); e.hidden = !S.showZoom; e.textContent = `Zoom ${comma(map.getZoom())}`; }
 
 /* 3D tilt (Google Maps tilts the camera; here it is shown with a CSS perspective) */
-function setTilt(on) { ML.tiltOn = on; $('#map').style.setProperty('--tilt', S.tiltDeg + 'deg'); $('#map').classList.toggle('tilted', on && S.tiltDeg > 0); syncTilt(); }
+function setTilt(on) { ML.tiltOn = on; if (GNATIVE) map.moveTilt(on ? S.tiltDeg : 0, RM.matches ? 0 : S.tiltMs); else { $('#map').style.setProperty('--tilt', S.tiltDeg + 'deg'); $('#map').classList.toggle('tilted', on && S.tiltDeg > 0); } syncTilt(); }
 function syncTilt() { const e = q('.ml-tilt'); e.hidden = !!ML.drawPoints || !tiltMode(map.getZoom()); e.textContent = ML.tiltOn ? '2D' : '3D'; e.setAttribute('aria-label', ML.tiltOn ? 'Изправи картата (2D)' : 'Наклони картата (3D)'); e.setAttribute('aria-pressed', String(ML.tiltOn)); }
 function autoTilt() {
   const z = map.getZoom();
@@ -3223,6 +3353,7 @@ map.on('zoomend', () => styleRoads());
 /* The map stays over Bulgaria: its edge may go at most panX px (left/right) and panY px (up/down) past the country's borders */
 const BG = L.latLngBounds([41.235, 22.357], [44.217, 28.609]), BG_C = BG.getCenter();
 function clampCenter() {
+  if (GNATIVE) { if (!map._clamped) { map._clamped = true; map.setMaxBounds(L.latLngBounds([BG.getSouth() - .6, BG.getWest() - .9], [BG.getNorth() + .6, BG.getEast() + .9])); } return; }
   const z = map.getZoom(), sw = map.project(BG.getSouthWest(), z), ne = map.project(BG.getNorthEast(), z);
   const b = L.latLngBounds(map.unproject(L.point(sw.x - S.panX, sw.y + S.panY), z), map.unproject(L.point(ne.x + S.panX, ne.y - S.panY), z));
   map.options.maxBoundsViscosity = 1; map.setMaxBounds(b);
@@ -3426,7 +3557,7 @@ const heroName = id => id === 'map' ? 'картата' : `снимката „${
 function loadProf() { const pr = S.hProf[homeHeroId()] || {}; for (const k of PK) S['h' + k] = k in pr ? pr[k] : DEF['h' + k]; }
 function saveProf() { const o = {}; for (const k of PK) o[k] = S['h' + k]; S.hProf[homeHeroId()] = o; }
 function homeLook() { if (typeof advLook === 'function') advLook(); if (typeof moreLook === 'function') moreLook(); const sc = $('#screen'); sc.classList.toggle('logo-color', S.hLogo === 'color'); sc.style.setProperty('--htop', S.hTop + 'px'); sc.style.setProperty('--hside', S.hSide + 'px'); sc.style.setProperty('--h-mtop', S.hMTop + 'px'); sc.style.setProperty('--h-mbot', S.hMBot + 'px'); const n = saved.size, em = $('#h-saved em'); if (em) { em.hidden = !n; em.textContent = n; } }
-function enterHome() {
+function enterHome() { requestAnimationFrame(() => requestAnimationFrame(() => typeof cardLock === 'function' && cardLock()));
   if (ML.home) return;
   tell('nav', 'home');
   if (fmAnim) { fmAnim.forEach(a => a.cancel()); fmAnim = null; }
@@ -3521,7 +3652,9 @@ function dealUI() { const rent = D.deal === 'rent', bs = $$('.fm-type button'); 
   if (typeof moreOn !== 'undefined' && moreOn) return;
   [[bs[0], !rent], [bs[1], rent]].forEach(([b, on]) => { b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on)); }); }
 /* 16.11: the search card keeps one height on Продажба, Наемане and Услуги – the height of the Продажба form (or the screen, if taller) */
-function cardLock() { const c = $('.fm-card'), sc = $('#screen'); if (!c || !ML.home || moreOn || D.deal === 'rent' || $('#fm-advanced') && !$('#fm-advanced').hidden) return; sc.style.removeProperty('--card-min'); fillLook(c, sc); sc.style.setProperty('--card-min', Math.ceil(natH(c)) + 'px'); }
+function cardLock() { const c = $('.fm-card'), sc = $('#screen'); if (!c || !ML.home || moreOn || D.deal === 'rent' || $('#fm-advanced') && !$('#fm-advanced').hidden) return; sc.style.removeProperty('--card-min'); fillLook(c, sc); sc.style.setProperty('--card-min', Math.ceil(natH(c)) + 'px'); fitLock(); }
+/* 18.11: on the home screen (menu not expanded) a few left-over pixels must not make the page scroll */
+function fitLock() { const scr = $('.fm-scroll'), sc = $('#screen'); if (!scr) return; sc.classList.remove('fit-lock'); requestAnimationFrame(() => { const adv = $('#fm-advanced'), open = adv && !adv.hidden; const over = scr.scrollHeight - scr.clientHeight; sc.classList.toggle('fit-lock', !!ML.home && !open && !moreOn && over <= 24); if (sc.classList.contains('fit-lock')) scr.scrollTop = 0; }); }
 /* 16.11: the free room of a tall phone goes into taller fields / bigger gaps (Начална страница → Отстояния и запълване) */
 function natH(c) { /* the height the form really needs (without the stretched room) */
   const cs = getComputedStyle(c), kids = [...c.children].filter(x => { const s = getComputedStyle(x); return s.display !== 'none' && s.position !== 'absolute'; });
@@ -3536,10 +3669,20 @@ function fillLook(c, sc) {
   let free = Math.max(c.getBoundingClientRect().height, avail) - nat;
   const F = 7, G = 8, B0 = 40, G0 = 8, fCap = Math.max(0, S.hFMax - B0), gCap = Math.max(0, S.hGMax - G0);
   let df = 0, dg = 0, db = 0;
-  if (avail - nat < -2) { /* a short phone: the menu does not fit – fields and gaps shrink a little (down to 34 px / 5 px) before anything scrolls */
-    const need = nat - avail, dfS = Math.min(6, need * .6 / F), dgS = Math.min(4, Math.max(0, need - dfS * F) / G), up = Math.min(36, Math.max(0, need - dfS * F - dgS * G));
+  if (avail - nat < -2) { /* 18.11: a short phone – the menu must fit without scrolling. Shrink in this order: fields (to 32 px), gaps (to 3 px),
+       the search button (to 40 px), the text (to 13 px) – and only then move the menu up, never closer than 10 px under the logo */
+    let need = nat - avail + 2;
+    const dfS = Math.min(8, need / F); need -= dfS * F;
+    const dgS = Math.max(0, Math.min(5, need / G)); need -= dgS * G;
+    const dbS = Math.max(0, Math.min(6, need)); need -= dbS;
     st.setProperty('--f-ctl', (B0 - dfS).toFixed(1) + 'px'); st.setProperty('--f-gap', (G0 - dgS).toFixed(1) + 'px');
-    if (up > 0) st.setProperty('--h-mtop', Math.max(40, S.hMTop - up) + 'px'); /* …and only then the menu moves up a little */
+    if (dbS) st.setProperty('--f-btn', (46 - dbS).toFixed(1) + 'px');
+    if (dfS > 4) st.setProperty('--f-fs', '13px');
+    if (need > 0) {
+      const lg = $('.logo', sc), lb = lg && lg.getBoundingClientRect().height ? lg.getBoundingClientRect().bottom - scr.getBoundingClientRect().top : 0;
+      const minTop = Math.max(40, Math.ceil(lb + 10)), up = Math.min(Math.max(0, S.hMTop - minTop), need);
+      if (up > 0) st.setProperty('--h-mtop', (S.hMTop - up) + 'px');
+    }
     return; }
   if (S.hFill === 'button' || free <= 2) return;
   if (S.hFill === 'fields') df = Math.min(fCap, free / F);
@@ -4214,7 +4357,8 @@ const CTL = [
   {key: 'railFrameMs', more: true, type: 'range', label: 'Скорост на рамката', min: 0, max: 800, step: 20, fmt: v => v ? v + ' ms' : 'веднага'},
   {grp: '3D наклон', d: 'При силно приближаване картата се накланя веднъж и се появява бутон 3D/2D.'},
   {key: 'tiltZoom', type: 'range', label: 'Наклон от', min: 13, max: 18.5, step: .5, fmt: zf},
-  {key: 'tiltDeg', more: true, type: 'range', label: 'Ъгъл на наклона', min: 0, max: 60, step: 5, fmt: v => v + '°'},
+  {key: 'tiltDeg', more: true, type: 'range', label: 'Ъгъл на наклона', min: 0, max: 67.5, step: 2.5, fmt: v => String(v).replace('.', ',') + '°', help: 'На картата на Google наклонът е истински (сградите са в 3D). Google позволява най-много 67,5°.'},
+  {key: 'tiltMs', more: true, type: 'range', label: 'Време за накланяне', min: 0, max: 1500, step: 50, fmt: v => v + ' ms'},
   {grp: 'Помощни', d: 'Неща, които се виждат само в тестовата версия.'},
   {key: 'showZoom', type: 'seg', label: 'Надпис „Zoom“ горе вляво', opts: [[true, 'Показвай'], [false, 'Скрий']]},
   /* ---- Иконки: the whole icon editor opens on the right ---- */
@@ -4451,7 +4595,7 @@ function apply(k) {
   if (/^h[A-Z]/.test(k) && PK.includes(k.slice(1))) saveProf();
   if (/^[fh][A-Z]/.test(k)) { setGlass(); return; }
   if (k === 'selFrame' || k === 'glyphScale') { setSel(); return; }
-  if (k === 'tiltDeg') { $('#map').style.setProperty('--tilt', S.tiltDeg + 'deg'); $('#map').classList.toggle('tilted', ML.tiltOn && S.tiltDeg > 0); return; }
+  if (k === 'tiltDeg' || k === 'tiltMs') { if (GNATIVE) { if (ML.tiltOn) map.moveTilt(S.tiltDeg, 300); return; } $('#map').style.setProperty('--tilt', S.tiltDeg + 'deg'); $('#map').classList.toggle('tilted', ML.tiltOn && S.tiltDeg > 0); return; }
   if (k === 'clusterPx') { rebuild(); return; }
   if (k === 'tiltZoom') { autoTilt(); }
   renderMarkers();
@@ -4781,6 +4925,8 @@ function layout() { if (typeof cardLock === 'function') requestAnimationFrame(()
   setTimeout(() => { map.invalidateSize(); renderMarkers(); const sc = railScroller(); sc && railEffect(sc); }, 30);
 }
 let rT; addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(layout, 120); });
+if (window.visualViewport) visualViewport.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(layout, 120); }); /* the phone's address bar shows / hides */
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => typeof cardLock === 'function' && cardLock());
 let tT;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tT); tT = setTimeout(() => t.classList.remove('show'), 2600); }
 
