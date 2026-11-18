@@ -1601,6 +1601,7 @@ img.mv-ava{display:block;object-fit:cover;object-position:50% 20%;background:#f4
 .gm-mk>.leaflet-marker-icon{position:absolute;left:0;top:0;width:0;height:0}
 html.gnative #map{background:var(--land)}
 html.gnative #map .gm-style-cc,html.gnative #map .gmnoprint{opacity:.75}
+html.gnative #map .gm-mk .ml-group,html.gnative #map .gm-mk .ml-photo,html.gnative #map .gm-mk button{pointer-events:auto;cursor:pointer}
 
 /* Map labels */
 .lbl-wrap{width:0!important;height:0!important;background:none;border:0}
@@ -2655,7 +2656,7 @@ class GMapLL { /* Leaflet-like map over google.maps.Map (only what this page use
       wrap.append(ic); l._icon = ic;
       if (l.options.interactive !== false) { ic.addEventListener('pointerdown', () => { this._mkAt = Date.now(); }); ic.addEventListener('click', ev => { this._mkAt = Date.now(); ev.stopPropagation(); l.fire('click', {originalEvent: ev, latlng: l.getLatLng()}); }); }
       const ll = l.getLatLng();
-      l._gObj = new C.marker.AdvancedMarkerElement({map: this._g, position: {lat: ll.lat, lng: ll.lng}, content: wrap, zIndex: 1000 + (l.options.zIndexOffset || 0)});
+      l._gObj = new C.marker.AdvancedMarkerElement({map: this._g, position: {lat: ll.lat, lng: ll.lng}, content: wrap, zIndex: 1000 + (l.options.zIndexOffset || 0), gmpClickable: l.options.interactive !== false}); /* without gmpClickable Google lets taps fall through to the map */
     } else if (l instanceof L.CircleMarker) {
       const o = l.options, ll = l.getLatLng(), r = o.radius || 6, d = document.createElement('div'), w = document.createElement('div');
       d.style.cssText = `position:absolute;left:${-r}px;top:${-r}px;width:${2 * r}px;height:${2 * r}px;border-radius:50%;box-sizing:border-box;background:${o.fillColor || '#fff'};border:${o.weight || 3}px solid ${o.color || '#ffbd47'};pointer-events:none`;
