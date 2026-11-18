@@ -1,0 +1,866 @@
+<!doctype html><html lang="bg"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Редактор на иконки Abella</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: work table — controls in a left column, the icon under a loupe and on a map on the right. */
+:root{
+  --bg:#f3f2ee; --surface:#ffffff; --sunk:#ebe9e3; --line:#dedbd2; --ink:#23261f; --muted:#6f7268;
+  --accent:#ffbd47; --accent-ink:#8a5a00; --focus:#3b6fd8;
+  --map:#efede6; --road:#f7d98f; --road2:#ffffff; --guide:#2f7de1;
+  --ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  --display:"Space Grotesk","Inter",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#191a17; --surface:#22241f; --sunk:#2b2d27; --line:#3a3d35; --ink:#ecebe5; --muted:#a3a59b;
+  --accent:#ffbd47; --accent-ink:#ffcf7a; --focus:#7fa6ff; --map:#2a2c26; --road:#6b5a2e; --road2:#3a3c35; --guide:#6fb0ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#191a17; --surface:#22241f; --sunk:#2b2d27; --line:#3a3d35; --ink:#ecebe5; --muted:#a3a59b;
+  --accent:#ffbd47; --accent-ink:#ffcf7a; --focus:#7fa6ff; --map:#2a2c26; --road:#6b5a2e; --road2:#3a3c35; --guide:#6fb0ff; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:13px/1.45 var(--ui);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:minmax(300px,370px) minmax(0,1fr);height:100%}
+.side{display:flex;flex-direction:column;min-height:0;background:var(--surface);border-right:1px solid var(--line)}
+.side-head{padding:18px 20px 12px;padding-left:max(20px,env(safe-area-inset-left,0px))}
+.eyebrow{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font:600 21px/1.15 var(--display);margin:4px 0 0;letter-spacing:-.01em;text-wrap:balance}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin:12px 20px 0;padding:3px;border-radius:10px;background:var(--sunk)}
+.tabs button{border:0;background:transparent;border-radius:8px;padding:8px 4px;font-weight:600;font-size:12.5px;color:var(--muted)}
+.tabs button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.ctrls{flex:1;overflow:auto;padding:4px 20px 20px;padding-left:max(20px,env(safe-area-inset-left,0px));scrollbar-width:thin}
+.sec{margin-top:18px}
+.sec>h2{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 8px;font:600 11px/1.2 var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sec>h2 small{letter-spacing:0;text-transform:none;font-weight:500}
+.f{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 10px;padding:6px 0;border-top:1px solid var(--line)}
+.f:first-of-type{border-top:0}
+.f label{font-weight:500}
+.f output{font:12px var(--mono);color:var(--accent-ink);font-variant-numeric:tabular-nums}
+.f input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--accent);margin:2px 0}
+.f .row{display:flex;gap:8px;align-items:center}
+.f input[type=color]{width:34px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:none}
+.f input[type=text]{width:84px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font:12px var(--mono)}
+.f select{padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--surface);max-width:190px}
+.f.off{opacity:.45}
+.artpick{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:4px}
+.artpick button{display:grid;justify-items:center;align-content:start;gap:4px;min-width:0;padding:8px 2px 6px;border:1px solid var(--line);border-radius:9px;background:var(--map);font-size:10.5px;line-height:1.2;color:var(--muted)}
+.artpick button svg{width:44px;height:44px}
+.pick-h{grid-column:1/-1;margin:8px 0 0;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.artpick button[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);color:var(--ink);font-weight:600}
+.note{margin:0 0 6px;padding:8px 10px;border-radius:8px;background:var(--sunk);color:var(--muted);font-size:11.5px}
+.f .hint{grid-column:1/-1;color:var(--muted);font-size:11.5px}
+.seg{display:flex;flex-wrap:wrap;gap:4px;grid-column:1/-1}
+.seg button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 10px;font-size:12px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.side-foot{display:flex;gap:8px;padding:12px 20px;padding-left:max(20px,env(safe-area-inset-left,0px));border-top:1px solid var(--line)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 12px;font-weight:600;font-size:12.5px}
+.btn.dark{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.btn.small{padding:5px 9px;font-size:12px}
+.side-foot{flex-direction:column;gap:6px}
+.foot-btns{display:flex;gap:8px}.foot-btns .btn{flex:1}
+.foot-links{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px}
+.link.strong{color:var(--ink);font-weight:600}
+#dev.flash{box-shadow:0 0 0 3px var(--accent)}
+.status{margin:0;font-size:11.5px;color:var(--muted)}
+.status b{color:var(--ink);font-weight:600}
+.link{align-self:flex-start;border:0;background:none;padding:0;font-size:11.5px;color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+
+.main{min-width:0;overflow:auto;padding-block:18px 28px;padding-left:24px;padding-right:max(24px,env(safe-area-inset-right,0px));display:grid;gap:18px;align-content:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.panel-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 12px;margin-bottom:10px}
+.panel-h h3{margin:0;font:600 15px var(--display)}
+.panel-h p{margin:0;color:var(--muted);font-size:12px}
+.top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px}
+.loupe{position:relative;display:grid;place-items:center;height:330px;border-radius:10px;background:
+  linear-gradient(var(--sunk) 1px,transparent 1px) 0 0/16px 16px,linear-gradient(90deg,var(--sunk) 1px,transparent 1px) 0 0/16px 16px,var(--map);overflow:hidden}
+.loupe-meta{position:absolute;left:10px;bottom:8px;font:11px var(--mono);color:var(--muted)}
+.vars{display:flex;flex-wrap:wrap;gap:6px}
+.real{display:grid;grid-template-columns:auto repeat(4,1fr);gap:8px 6px;align-items:center;justify-items:center;padding:10px;border-radius:10px;background:var(--map)}
+.real b{font-weight:600;font-size:11.5px;color:var(--muted);justify-self:start}
+.real .cap{font-size:11px;color:var(--muted)}
+.states{display:flex;flex-wrap:wrap;gap:22px;align-items:center;justify-content:space-around;margin-top:12px;padding:16px 10px 10px;border-radius:10px;background:var(--map)}
+.states figure{margin:0;display:grid;gap:8px;justify-items:center;font-size:11px;color:var(--muted)}
+.scene{position:relative;height:420px;border-radius:10px;overflow:hidden;background:var(--map);touch-action:manipulation}
+.scene svg.roads{position:absolute;inset:0;width:100%;height:100%}
+.scene .hint2{position:absolute;left:10px;top:8px;font-size:11.5px;color:var(--muted);background:color-mix(in srgb,var(--surface) 80%,transparent);padding:3px 8px;border-radius:6px}
+.mk{position:absolute;display:block;border-radius:50%;transform:translate(-50%,-50%);cursor:pointer;line-height:0;-webkit-tap-highlight-color:transparent}
+.mk>svg{display:block;overflow:visible}
+.mk .heart{position:absolute;display:grid;place-items:center;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(25,42,33,.17);pointer-events:none}
+.mk .heart svg{fill:currentColor}
+.mk .ripple{position:absolute;inset:0;border-radius:50%;pointer-events:none}
+.code{margin:0;max-height:260px;overflow:auto;padding:12px;border-radius:10px;background:var(--sunk);font:11.5px/1.55 var(--mono);white-space:pre}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--surface);padding:9px 14px;border-radius:9px;font-weight:600;transition:.2s;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (max-width:980px){.top{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr;height:auto}
+  html,body{height:auto}
+  .side{border-right:0;border-bottom:1px solid var(--line)}
+  .ctrls{max-height:none;overflow:visible}
+  .main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .side-head,.ctrls,.side-foot{padding-right:max(16px,env(safe-area-inset-right,0px));padding-left:max(16px,env(safe-area-inset-left,0px))}
+  .tabs{margin-left:16px;margin-right:16px}
+  .loupe{height:260px}
+  .real{grid-template-columns:auto repeat(4,1fr)}
+}
+</style></head><body>
+
+<div class="app">
+  <aside class="side">
+    <div class="side-head">
+      <div class="eyebrow">Abella · карта на новото строителство</div>
+      <h1>Редактор на иконки</h1>
+    </div>
+    <div class="tabs" role="tablist" id="tabs">
+      <button data-t="b" aria-pressed="true">Сграда</button>
+      <button data-t="a" aria-pressed="false">Апартамент</button>
+      <button data-t="r" aria-pressed="false">Наем</button>
+      <button data-t="s" aria-pressed="false">Състояния и анимации</button>
+    </div>
+    <div class="ctrls" id="ctrls"></div>
+    <div class="side-foot">
+      <div class="foot-btns"><button class="btn" id="reset">Върни одобрените</button>
+      <button class="btn dark" id="approve">Запиши като одобрени</button></div>
+      <p class="status" id="status">Промените се пазят автоматично.</p>
+      <div class="foot-links"><button class="link strong" id="to-dev">За програмиста: SVG, CSS, JSON ↓</button>
+      <button class="link" id="factory">Върни стойностите от 10.11</button></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="top">
+      <section class="panel">
+        <div class="panel-h"><h3>Под лупа</h3>
+          <div class="vars" id="vars"></div></div>
+        <div class="loupe" id="loupe"></div>
+        <div class="panel-h" style="margin:10px 0 0"><p>Синьото е помощно: поле на рисунката, център на цифрите, център на кръга.</p>
+          <span style="display:flex;gap:14px"><label style="display:flex;gap:6px;align-items:center;font-size:12px"><input type="checkbox" id="lheart"> Сърце</label><label style="display:flex;gap:6px;align-items:center;font-size:12px"><input type="checkbox" id="guides" checked> Помощни линии</label></span></div>
+      </section>
+      <section class="panel">
+        <div class="panel-h"><h3>В истински размер</h3><p>1 : 1, както на телефона</p></div>
+        <div class="real" id="real"></div>
+        <div class="states" id="states"></div>
+      </section>
+    </div>
+
+    <section class="panel">
+      <div class="panel-h"><h3>Пробвай на картата</h3>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <label class="btn small" style="gap:6px;cursor:pointer" title="Включено – щракната група се разделя. Изключено – само се маркира."><input type="checkbox" id="split-on"> Разделяне на група</label>
+          <button class="btn small" id="play-appear">Пусни появата</button>
+          <button class="btn small" id="play-split">Раздели групата</button>
+          <button class="btn small" id="clear-sel">Махни избора</button>
+          <button class="btn small" id="reset-scene">Подреди отново</button>
+        </div></div>
+      <div class="scene" id="scene">
+        <svg class="roads" viewBox="0 0 1000 380" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M-20 300 C 200 250 330 280 520 200 S 820 120 1020 140" fill="none" stroke="var(--road)" stroke-width="9"/>
+          <path d="M120 -10 C 160 120 240 220 260 400" fill="none" stroke="var(--road)" stroke-width="7"/>
+          <path d="M600 -10 L 640 400" fill="none" stroke="var(--road2)" stroke-width="6"/>
+          <path d="M-10 90 L 1010 60" fill="none" stroke="var(--road2)" stroke-width="5"/>
+          <path d="M380 400 C 420 300 520 280 700 330 S 900 380 1010 300" fill="none" stroke="var(--road2)" stroke-width="5"/>
+          <path d="M820 -10 C 800 100 860 200 840 400" fill="none" stroke="var(--road)" stroke-width="6"/>
+        </svg>
+        <span class="hint2">Щракни група, за да се раздели; единичен обект – за да го избереш</span>
+      </div>
+    </section>
+
+    <section class="panel" id="dev">
+      <div class="panel-h"><h3>За програмиста</h3>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn small" id="copy-json">Копирай настройките (JSON)</button>
+          <button class="btn small" id="copy-svg">Копирай SVG на иконката под лупа</button>
+          <button class="btn small" id="copy-css">Копирай CSS на анимациите</button>
+        </div></div>
+      <pre class="code" id="code"></pre>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const STORE = 'abella-icon-editor-v1-panel2';
+
+/* ---------- Artwork (same paths as the test map) ---------- */
+const B_ART = (gapTop, gapBot, sw, hasDigits, peak = 309) => `<g transform="matrix(1.683860401 0 0 1.683860401 -117.010275361 -339.363194527)"><g fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round"><path d="M312 ${peak} L553 375 V677 H470 V620 H384 V677 H160 V460 L244 436 V390 L312 363 Z"/><path d="${hasDigits ? `M312 ${peak} V${gapTop} M312 ${gapBot} V677` : `M312 ${peak} V677`}"/><path d="M427 620 V677"/></g><g fill="currentColor"><rect x="191.5" y="482.5" width="42" height="41.5" rx="5"/><rect x="191.5" y="543.5" width="42" height="41.5" rx="5"/><rect x="191.5" y="604.5" width="42" height="41.5" rx="5"/></g></g>`;
+const A_ART = (t, e, sw) => `<g transform="matrix(1.682279928 0 0 1.682279928 -1217.894030211 -338.486028144)"><g fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round"><path d="M877 669 H836 V352 H1224 V669 H961 C961 623.7 923.4 587 877 587 Z"/><path d="M918 352 V395.3 M1098 352 V395.3 M836 464 H${t} M1224 508 H${e} M1136 669 V613"/></g></g>`;
+/* Ten alternative building drawings, in the viewBox's own units (118 148 730 686).
+   All keep the digits' area (x 300–790, y 395–650) free and stay inside the circle. */
+const DOOR = 'M530 801 V705 H674 V801';
+const WIN = (x, y, w = 70, h = 70) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8"/>`;
+const RC = 453.5, YC = x => +(491 - Math.sqrt(RC * RC - (x - 483) * (x - 483))).toFixed(1);
+const CWIN = [WIN(205, 473, 71, 70), WIN(205, 576, 71, 70), WIN(205, 679, 71, 70)];
+const CDIV = top => `M408 ${top} V373 M408 674 V801`, CDOOR = 'M530 801 V705 H674 V801 M602 705 V801';
+/* Approved building drawing (10.11): „Микс 23 + 28“. The other drafts were removed. */
+const B_VARS = [
+  {n: 'Стара (до 10.11)'},
+  {n: 'Сграда · окончателна', fit: 1, divAuto: 1, p: [`M152 801 V360 L294 325 V275 L408 240 V${YC(408)} L700 ${YC(700)} V${YC(814)} H814 V801 Z`, CDOOR], f: [WIN(200.5, 399.1, 84.5, 97.8), WIN(200.5, 526.9, 84.5, 97.8), WIN(200.5, 654.7, 84.5, 97.8)]},
+];
+const B_VAR_ART = (i, sw, extra = []) => { const v = B_VARS[i]; return `<g fill="none" stroke="currentColor" stroke-width="${(sw * 1.683860401).toFixed(1)}" stroke-linejoin="round" stroke-linecap="round">${v.p.concat(extra).map(d => `<path d="${d}"/>`).join('')}${(v.c || []).map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g><g fill="currentColor">${v.f.join('')}</g>`; };
+/* Apartment alternatives (11.11): finished, lived-in, Act 16 – the number stays inside.
+   Drawn in the apartment viewBox (156 222 718 596); centre 515/520; digits' zone x 247–778, y 372–612. */
+const ROS = (() => { const cx = 515, cy = 520, n = 16, ro = 410, ri = 378; let d = ''; for (let i = 0; i < n; i++) { const a0 = i / n * 2 * Math.PI, a1 = (i + .5) / n * 2 * Math.PI, a2 = (i + 1) / n * 2 * Math.PI; const p = (a, r) => `${(cx + r * Math.sin(a)).toFixed(1)} ${(cy - r * Math.cos(a)).toFixed(1)}`; d += (i ? '' : `M${p(a0, ri)} `) + `Q${p(a1, ro + 34)} ${p(a2, ri)} `; } return d + 'Z'; })();
+/* 10 variations of the current floor-plan icon (11.11), drawn in the apartment viewBox.
+   PLAN() is the current plan; options swap the door, add a roof, windows, furniture, a key or a check. */
+const LX = x => +(1.682279928 * x - 1217.894030211).toFixed(1), LY = y => +(1.682279928 * y - 338.486028144).toFixed(1);
+function PLAN(V, o = {}) {
+  const tx = LX(V.t), ex = LX(V.e), top = o.roof ? 330 : 253.7;
+  const outer = o.noDoor ? `M188.5 786.9 V${top}${o.roof ? ' L515 140 L841.2 330' : ' H841.2'} V786.9 Z`
+    : `M257.5 786.9 H188.5 V${top}${o.roof ? ' L515 140 L841.2 330' : ' H841.2'} V786.9 H398.8 C398.8 710.7 335.5 649 257.5 649 Z`;
+  const stubs = `${o.roof ? '' : 'M326.4 253.7 V326.5 M629.2 253.7 V326.5 '}M188.5 442.1 H${tx} M841.2 516.1 H${ex} M693.1 786.9 V692.8`;
+  return [outer, stubs];
+}
+/* Apartment variants (11.11): the current plan with three windows marked in the walls. */
+const AL = 188.5, AR = 841.2, AT = 253.7, AB = 786.9;
+function segs(a, b, gaps) { const out = []; let cur = a; [...gaps].sort((x, y) => x[0] - y[0]).forEach(([g1, g2]) => { if (g1 > cur) out.push([cur, g1]); cur = Math.max(cur, g2); }); if (cur < b) out.push([cur, b]); return out; }
+function WPLAN(V, g, style, st = 'tlrb') {
+  g = Object.assign({t: [], r: [], b: [], l: []}, g);
+  const walls = [], glass = [];
+  const solid = style === 'sill';
+  const G = solid ? {t: [], r: [], b: [], l: []} : g;
+  segs(AL, AR, G.t).forEach(([a, b]) => walls.push(`M${a} ${AT} H${b}`));
+  segs(AT, AB, G.r).forEach(([a, b]) => walls.push(`M${AR} ${a} V${b}`));
+  segs(398.8, AR, G.b).forEach(([a, b]) => walls.push(`M${a} ${AB} H${b}`));
+  segs(AT, AB, G.l).forEach(([a, b]) => walls.push(`M${AL} ${a} V${b}`));
+  walls.push(`M${AL} ${AB} H257.5`, DOOR_BL, stubs(V, st));
+  const offs = style === 'double' ? [-14, 14] : style === 'triple' ? [-15, 0, 15] : style === 'sill' ? [-30] : style === 'gap' ? [] : [0];
+  const out = d => d; /* outward offset sign per side */
+  for (const o of offs) {
+    g.t.forEach(([a, b]) => glass.push(`M${a} ${AT + (style === 'sill' ? o : o)} H${b}`));
+    g.r.forEach(([a, b]) => glass.push(`M${AR - (style === 'sill' ? o : o)} ${a} V${b}`));
+    g.b.forEach(([a, b]) => glass.push(`M${a} ${AB - (style === 'sill' ? o : o)} H${b}`));
+    g.l.forEach(([a, b]) => glass.push(`M${AL + (style === 'sill' ? o : o)} ${a} V${b}`));
+  }
+  const ticks = [];
+  if (style === 'double' || style === 'triple') { g.t.forEach(([a, b]) => glass.push(`M${a} ${AT - 15} V${AT + 15} M${b} ${AT - 15} V${AT + 15}`)); g.r.forEach(([a, b]) => glass.push(`M${AR - 15} ${a} H${AR + 15} M${AR - 15} ${b} H${AR + 15}`)); g.l.forEach(([a, b]) => glass.push(`M${AL - 15} ${a} H${AL + 15} M${AL - 15} ${b} H${AL + 15}`)); g.b.forEach(([a, b]) => glass.push(`M${a} ${AB - 15} V${AB + 15} M${b} ${AB - 15} V${AB + 15}`)); }
+  if (style === 'gap') { g.t.forEach(([a, b]) => ticks.push(`M${a} ${AT - 18} V${AT + 18} M${b} ${AT - 18} V${AT + 18}`)); g.r.forEach(([a, b]) => ticks.push(`M${AR - 18} ${a} H${AR + 18} M${AR - 18} ${b} H${AR + 18}`)); g.l.forEach(([a, b]) => ticks.push(`M${AL - 18} ${a} H${AL + 18} M${AL - 18} ${b} H${AL + 18}`)); g.b.forEach(([a, b]) => ticks.push(`M${a} ${AB - 18} V${AB + 18} M${b} ${AB - 18} V${AB + 18}`)); }
+  return {p: walls.concat(ticks), thin: glass, thinW: style === 'double' ? .3 : style === 'triple' ? .24 : .5};
+}
+const A_VARS = [
+  {n: 'Стара (план без прозорци)'},
+  {n: 'С три прозореца (одобрена)', d: V => WPLAN(V, {t: [[372, 585], [655, 822]], r: [[545, 765]]}, 'double')},
+];
+/* door bottom-left as in the current plan; partition stubs: t = both top, T = only right top, l/r = side stubs (follow the digits), b = bottom */
+const DOOR_BL = 'M257.5 786.9 V649 C335.5 649 398.8 710.7 398.8 786.9';
+function stubs(V, w) {
+  const tx = LX(V.t), ex = LX(V.e), o = [];
+  if (w.includes('t')) o.push('M326.4 253.7 V326.5 M629.2 253.7 V326.5'); else if (w.includes('T')) o.push('M629.2 253.7 V326.5');
+  if (w.includes('l')) o.push(`M188.5 442.1 H${tx}`);
+  if (w.includes('r')) o.push(`M841.2 516.1 H${ex}`);
+  if (w.includes('b')) o.push('M693.1 786.9 V692.8');
+  return o.join(' ');
+}
+function A_VAR_ART(i, K, V) {
+  const v = A_VARS[i].d(V), S = K.sw * 1.682279928, sw = (v.heavy ? S * 1.6 : S).toFixed(1);
+  let out = '';
+  if (v.floor) out += `<path d="M188.5 253.7 H841.2 V786.9 H188.5 Z" fill="currentColor" opacity=".18"/>`;
+  out += `<g fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round">${v.p.map(d => `<path d="${d}"/>`).join('')}${(v.c || []).map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>`;
+  if (v.thin) out += `<g fill="none" stroke="currentColor" stroke-width="${(S * (v.thinW || .55)).toFixed(1)}" stroke-linecap="round">${v.thin.map(d => `<path d="${d}"/>`).join('')}</g>`;
+  if (v.fill) out += `<g fill="currentColor">${v.fill.join('')}</g>`;
+  if (v.badge) { const [bx, by, br] = v.badge; out += `<circle cx="${bx}" cy="${by}" r="${br}" fill="currentColor"/><path d="M${bx - 34} ${by + 2} L${bx - 9} ${by + 27} L${bx + 36} ${by - 24}" fill="none" stroke="${K.fill}" stroke-width="${(S * .75).toFixed(1)}" stroke-linecap="round" stroke-linejoin="round"/>`; }
+  return out;
+}
+const VB = {b: [118, 148, 730, 686], a: [156, 222, 718, 596], r: [156, 222, 718, 596]};
+/* Rental (14.11): a house with a keyhole in the gable */
+/* Rental (15.11): variant 4 – a sign hanging on a post; the count is on the sign */
+const R_ART = sw => ''; /* 15.11: the rental pin shows only the number */
+const SAMPLE = {b: [7, 63, 109, 1250], a: [1, 12, 100, 1000], r: [1, 12, 100, 1000]};
+const VAR_NAMES = ['Единици', 'Десетици', 'Стотици', 'Хиляди'];
+
+/* ---------- Approved values (10.11.2026) ---------- */
+const DEF = {
+  b: {size: 38, fill: '#ffbd47', glyph: '#ffffff', digit: '#ffffff', ring: 0, ringColor: '#ffbd47', border: 2, borderColor: '#ffffff',
+      shY: 1, shBlur: 5, shOp: 16, art: 1, gH: 69.3, gStretch: 100, gX: 0, gY: 0, sw: 22, gapTop: 423, gapBot: 602,
+      dScale: 115, dWeight: 700, dX: 0, dY: 0, dWidth: 100, adjust: 'spacingAndGlyphs', tnum: true,
+      v: [{x: 610, y: 522, w: 156}, {x: 533, y: 522, w: 297}, {x: 538, y: 522, w: 478}, {x: 548, y: 522, w: 510}]},
+  a: {art: 1, size: 32, fill: '#ffffff', glyph: '#ffbd47', digit: '#ffbd47', ring: 2, ringColor: '#ffbd47', border: 2, borderColor: '#ffffff',
+      shY: 1, shBlur: 5, shOp: 16, gH: 55.3, gStretch: 100, gX: 0, gY: 0, sw: 22,
+      dScale: 120, dWeight: 700, dX: 0, dY: 0, dWidth: 100, adjust: 'spacingAndGlyphs', tnum: true,
+      v: [{x: 511, y: 492, w: 181, t: 897, e: 1136}, {x: 512, y: 492, w: 296, t: 897, e: 1141.9}, {x: 513, y: 492, w: 498, t: 855.2, e: 1201.4}, {x: 513, y: 492, w: 540, t: 855.2, e: 1201.4}]},
+  r: {"rv2": true, "size": 30, "fill": "#e4002b", "border": 2, "borderColor": "#ffffff", "pinL": 165, "pinRound": 25, "hole": 44, "holeColor": "#ffffff", "holeY": 0, "one": "num", "digit": "#e4002b", "dScale": 100, "dWeight": 800, "shY": 1, "shBlur": 4, "shOp": 28},
+  s: {bigFrom: 50, bigScale: 112, selScale: 112, selRing1: 2.5, selRing2: 2.5, selColor: '#ffbd47', selShadow: 25,
+      heartSize: 18, heartIcon: 12, heartColor: '#c34d66', heartBg: '#ffffff', heartBgOp: 100, heartX: -6, heartY: -8,
+      hover: 'lift', tap: 'spring', selected: 'none', appear: 'rise', split: 'burst', dur: 420, ease: 'spring', stagger: 35, groupTap: 'split',
+      springPeak: 130, springDip: 94, springPeakAt: 35, springDipAt: 65, springBounces: 1, springSquash: 0, springDur: 420, springEase: 'spring', springDelay: 0}
+};
+const BIG_ON = false; /* big-group enlargement removed 10.11 – all groups keep the icon size */
+const clone = o => JSON.parse(JSON.stringify(o));
+/* 14.11: settings saved before the rental icon existed – the new icon takes the apartment's size and outline */
+const withR = (p, src) => { if (!(src && src.r && src.r.rv2)) p.r = clone(DEF.r); if (!(src && src.r && src.r.rv3)) Object.assign(p.r, {one: 'num', rv3: true}); return p; }; /* 16.11: the new „Наем“ pin replaces earlier settings */
+let P = clone(DEF);
+try { const raw = JSON.parse(localStorage.getItem(STORE) || 'null'); if (raw && raw.b && raw.a && raw.s) P = withR(mergeDeep(clone(DEF), raw), raw); } catch (_) {}
+function mergeDeep(a, b) { for (const k in b) { if (a[k] && typeof a[k] === 'object' && !Array.isArray(a[k])) mergeDeep(a[k], b[k]); else if (k in a) a[k] = b[k]; } return a; }
+/* Saving: every change goes to this browser at once and to the artifact's own storage (db) after a short pause,
+   so a refresh on any device opens the last version. "Запиши като одобрени" keeps a separate approved copy. */
+let localAt = 0, approvedLocal = null, approvedAt = 0;
+try { const m = JSON.parse(localStorage.getItem(STORE + '-meta') || 'null'); if (m) { localAt = m.at || 0; approvedLocal = m.approved || null; approvedAt = m.approvedAt || 0; } } catch (_) {}
+const saveLocal = () => { try { localStorage.setItem(STORE, JSON.stringify(P)); localStorage.setItem(STORE + '-meta', JSON.stringify({at: localAt, approved: approvedLocal, approvedAt})); } catch (_) {} };
+let db = null, dbOk = false, writing = Promise.resolve(), draftT;
+const when = t => t ? new Date(t).toLocaleString('bg-BG', {day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit'}) : '';
+function showStatus(extra) {
+  const parts = [];
+  parts.push(extra || (dbOk ? 'Промените се пазят автоматично – и след презареждане.' : 'Промените се пазят в този браузър.'));
+  if (approvedAt) parts.push(`Одобрени: <b>${when(approvedAt)}</b>`);
+  $('#status').innerHTML = parts.join(' · ');
+}
+function dbWrite(path, data) {
+  if (!dbOk) return Promise.resolve(false);
+  writing = writing.then(() => db.doc(path).set(data)).then(() => true).catch(e => { if (e && (e.code === 'invalid_argument' || e.code === 'revoked' || e.code === 'not_granted')) dbOk = false; return false; });
+  return writing;
+}
+const toPanel = () => { try { if (parent !== window) parent.postMessage({abellaIcons: 1, P: JSON.parse(JSON.stringify(P))}, '*'); } catch (_) {} };
+const save = () => {
+  toPanel();
+  localAt = Date.now(); saveLocal();
+  clearTimeout(draftT); draftT = setTimeout(() => dbWrite('settings/draft', {icons: clone(P), at: localAt}), 1200);
+};
+function bridgeDb() {
+  let n = 0; const wait = new Map();
+  addEventListener('message', e => { const m = e.data; if (e.source !== parent || !m || m.abellaEdRes !== 1) return; const w = wait.get(m.id); if (w) { wait.delete(m.id); m.ok ? w[0](m.v) : w[1](m.v || {code: 'failed'}); } });
+  const call = (op, path, data) => new Promise((ok, no) => { const id = ++n; wait.set(id, [ok, no]); parent.postMessage({abellaEd: 1, id, op, path, data}, '*'); setTimeout(() => { if (wait.has(id)) { wait.delete(id); no({code: 'timeout'}); } }, 10000); });
+  return {doc: path => ({get: () => call('get', path).then(v => ({exists: v != null, data: () => v})), set: d => call('set', path, d)})};
+}
+async function connectDb() {
+  /* inside the design panel the page that hosts the editor keeps the database – ask it through messages */
+  db = parent !== window ? bridgeDb() : null;
+  if (!db) { try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (_) { db = null; } }
+  if (!db) { showStatus(); return; }
+  dbOk = true;
+  try {
+    const [d, a] = await Promise.all([db.doc('settings/draft').get(), db.doc('settings/approved').get()]);
+    if (a.exists) { const v = a.data(); if (v && v.icons && (v.at || 0) >= approvedAt) { approvedLocal = clone(v.icons); approvedAt = v.at || 0; } }
+    if (d.exists) { const v = d.data(); if (v && v.icons && (v.at || 0) > localAt) { P = withR(mergeDeep(clone(DEF), clone(v.icons)), clone(v.icons)); localAt = v.at; renderAll(); } }
+    saveLocal();
+  } catch (_) {}
+  showStatus();
+}
+
+let tab = 'b', loupeKind = 'b', loupeVar = 1, linkVars = false;
+try { linkVars = localStorage.getItem(STORE + '-link3') === '1'; } catch (_) {}
+P.b.art = 1; /* the approved drawing is fixed */
+if (!A_VARS[P.a.art]) P.a.art = 1;
+const varOf = n => Math.min(3, String(n).length - 1);
+
+/* ---------- Marker rendering ---------- */
+function glyphBox(kind, d) {
+  const K = P[kind], [, , vw, vh] = VB[kind], h = d * K.gH / 100, w = h * (vw / vh) * K.gStretch / 100;
+  return {w, h, x: (d - w) / 2 + d * K.gX / 100, y: (d - h) / 2 + d * K.gY / 100};
+}
+/* The building's peak is raised automatically so that it sits as far from the white border
+   as the two bottom corners do (approved 10.11, not a manual setting). */
+function buildingPeak(d, g) {
+  const [vx, vy, vw, vh] = VB.b, sx = g.w / vw, sy = g.h / vh, c = d / 2;
+  const M = (X, Y) => [g.x + (1.683860401 * X - 117.010275361 - vx) * sx, g.y + (1.683860401 * Y - 339.363194527 - vy) * sy];
+  const rad = p => Math.hypot(p[0] - c, p[1] - c);
+  const rB = Math.max(rad(M(160, 677)), rad(M(553, 677))), px = M(312, 0)[0];
+  if (rB <= Math.abs(px - c)) return 309;
+  const py = c - Math.sqrt(rB * rB - (px - c) * (px - c));
+  const Y = ((py - g.y) / sy + vy + 339.363194527) / 1.683860401;
+  return Math.min(309, Math.round(Y * 10) / 10);
+}
+const pinPath = (c, R, L, k = 0) => { const t = Math.acos(Math.min(.99, R / L)), sx = R * Math.sin(t), sy = R * Math.cos(t), f = v => v.toFixed(2);
+  const seg = Math.hypot(sx, L - sy), kk = k || 0, d = Math.min(.99, kk <= 100 ? kk / 100 * .9 : .9 + (kk - 100) / 40 * .09), qx = sx * d, qy = (L - sy) * d, tipY = c + L - (kk > 100 ? (L - sy) * (kk - 100) / 40 * .35 : 0); /* 16.11: rounded tip, k = 0…140 % */
+  if (!d) return `M${f(c)} ${f(c + L)} L${f(c - sx)} ${f(c + sy)} A${f(R)} ${f(R)} 0 1 1 ${f(c + sx)} ${f(c + sy)} Z`;
+  return `M${f(c - qx)} ${f(c + L - qy)} L${f(c - sx)} ${f(c + sy)} A${f(R)} ${f(R)} 0 1 1 ${f(c + sx)} ${f(c + sy)} L${f(c + qx)} ${f(c + L - qy)} Q${f(c)} ${f(tipY)} ${f(c - qx)} ${f(c + L - qy)} Z`; };
+/* 16.11: the „Наем“ marker – a map pin (Google-maps style): coloured drop with a white edge and a round hole;
+   a group shows its count in the hole, a single rental shows only the hole (or „1“) */
+function rentPinParts(K, count) {
+  const B = K.border, d = K.size, W = d + 2 * B, c = W / 2, L = c * K.pinL / 100, hr = d * K.hole / 200, hy = c + c * K.holeY / 100;
+  const n = String(count), showN = count != null && (count > 1 || K.one === 'num');
+  const fs = hr * 2 * .6 * K.dScale / 100, natural = fs * .62 * n.length, maxW = hr * 2 * .84;
+  const txt = showN ? `<text x="${c}" y="${hy.toFixed(2)}" font-size="${fs.toFixed(2)}" font-weight="${K.dWeight}" font-family="Inter, Arial, sans-serif" fill="${K.digit}" text-anchor="middle" dominant-baseline="central" style="font-variant-numeric:tabular-nums"${natural > maxW ? ` textLength="${maxW.toFixed(2)}" lengthAdjust="spacingAndGlyphs"` : ''}>${n}</text>` : '';
+  const body = (B > 0 ? `<path d="${pinPath(c, c, L, K.pinRound)}" fill="${K.borderColor}"/>` : '') + `<path d="${pinPath(c, d / 2, L - B * 1.6, K.pinRound)}" fill="${K.fill}"/>` + `<circle cx="${c}" cy="${hy.toFixed(2)}" r="${hr.toFixed(2)}" fill="${K.holeColor}"/>` + txt;
+  return {W, c, L, body};
+}
+function markerSVG(kind, count, {scale = 1, big = false, guides = false, shadow = true, art: artIdx, heart = false} = {}) {
+  if (kind === 'r') { const K = P.r, Q = rentPinParts(K, count), sh = Q.L / 2 - Q.W / 4;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${(Q.W * scale).toFixed(2)}" height="${(Q.W * scale).toFixed(2)}" viewBox="0 0 ${Q.W.toFixed(2)} ${Q.W.toFixed(2)}" overflow="visible" style="${shadow ? `filter:drop-shadow(0 ${K.shY}px ${K.shBlur / 2}px rgba(0,0,0,${K.shOp / 100}));` : ''}transform:translateY(${(-sh * scale).toFixed(1)}px)">${Q.body}${heart ? heartSVG(Q.W, guides ? scale : 0) : ''}</svg>`; }
+  const K = P[kind], n = varOf(count), V = K.v[n];
+  const d = K.size * (big && BIG_ON ? P.s.bigScale / 100 : 1), B = K.border, W = d + 2 * B, c = W / 2;
+  const g = glyphBox(kind, d), [vx, vy, vw, vh] = VB[kind];
+  const q = .82 * K.dScale / 100, fs = 336 * q, len = V.w * q * K.dWidth / 100;
+  const ai = artIdx ?? K.art ?? 0;
+  /* Mix 1: the tower line above and below the digits is cut to the digits' own height + 70 units, per digit form */
+  const divExtra = () => { const cy = V.y + K.dY, half = .727 * fs / 2, M = 70, top = cy - half - M, bot = cy + half + M, out = [];
+    if (top > 262) out.push(`M408 240 V${top.toFixed(1)}`); if (bot < 779) out.push(`M408 ${bot.toFixed(1)} V801`); return out; };
+  const art = kind === 'r' ? R_ART(K.sw) : kind === 'b' ? (ai > 0 && B_VARS[ai] ? B_VAR_ART(ai, K.sw, B_VARS[ai].divAuto ? divExtra() : []) : B_ART(K.gapTop, K.gapBot, K.sw, true, buildingPeak(d, g))) : ((artIdx ?? K.art ?? 0) > 0 && A_VARS[artIdx ?? K.art] ? A_VAR_ART(artIdx ?? K.art, K, V) : A_ART(V.t, V.e, K.sw));
+  const txt = `<text x="${V.x + K.dX}" y="${V.y + K.dY}" font-size="${fs.toFixed(1)}" font-weight="${K.dWeight}" font-family="Inter, Arial, sans-serif"${K.tnum ? ' style="font-variant-numeric:tabular-nums"' : ''} fill="${K.digit}" text-anchor="middle" dominant-baseline="central"${K.adjust !== 'none' ? ` textLength="${len.toFixed(1)}" lengthAdjust="${K.adjust}"` : ''}>${count}</text>`;
+  const ring = K.ring > 0 ? `<circle cx="${c}" cy="${c}" r="${d / 2 - K.ring / 2}" fill="none" stroke="${K.ringColor}" stroke-width="${K.ring}"/>` : '';
+  const gd = guides ? `<g fill="none" stroke="var(--guide)" stroke-width="${.6 / scale * 4}" stroke-dasharray="${2 / scale * 4} ${1.5 / scale * 4}"><rect x="${B + g.x}" y="${B + g.y}" width="${g.w}" height="${g.h}"/><path d="M${c} ${B} V${W - B} M${B} ${c} H${W - B}" opacity=".45"/></g>` : '';
+  const dg = guides ? (() => { const sx = g.w / vw, sy = g.h / vh, px = B + g.x + (V.x + K.dX - vx) * sx, py = B + g.y + (V.y + K.dY - vy) * sy, hw = len * sx / 2; return `<g stroke="var(--guide)" stroke-width="${.7 / scale * 4}" fill="none"><path d="M${px - hw} ${py} H${px + hw}"/><circle cx="${px}" cy="${py}" r="${.9 / scale * 4}" fill="var(--guide)"/></g>`; })() : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${(W * scale).toFixed(2)}" height="${(W * scale).toFixed(2)}" viewBox="0 0 ${W.toFixed(2)} ${W.toFixed(2)}" overflow="visible" style="${shadow ? `filter:drop-shadow(0 ${K.shY}px ${K.shBlur / 2}px rgba(0,0,0,${K.shOp / 100}));` : ''}${K.shape === 'pin' ? `transform:translateY(${(-(c * (K.pinL || 150) / 100 * .5 - W / 4) * scale).toFixed(1)}px)` : ''}">` +
+    (K.shape === 'pin' ? `<path d="${pinPath(c, c, c * (K.pinL || 150) / 100, K.pinRound)}" fill="${B > 0 ? K.borderColor : K.fill}"/><path d="${pinPath(c, d / 2, c * (K.pinL || 150) / 100 - B * 1.6, K.pinRound)}" fill="${K.fill}"/>` :
+    (B > 0 ? `<circle cx="${c}" cy="${c}" r="${c}" fill="${K.borderColor}"/>` : '') + `<circle cx="${c}" cy="${c}" r="${d / 2}" fill="${K.fill}"/>`) + `${ring}` +
+    `<svg x="${(B + g.x).toFixed(3)}" y="${(B + g.y).toFixed(3)}" width="${g.w.toFixed(3)}" height="${g.h.toFixed(3)}" viewBox="${vx} ${vy} ${vw} ${vh}" preserveAspectRatio="none" overflow="visible" color="${K.glyph}">${art}${txt}</svg>${gd}${dg}${heart ? heartSVG(W, guides ? scale : 0) : ''}</svg>`;
+}
+/* Saved badge drawn inside the marker's SVG: the circle and the heart share one centre, so they stay centred at any size. */
+const HEART_D = 'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z';
+function heartSVG(W, gscale) {
+  const s = P.s, r = s.heartSize / 2, cx = W - s.heartX - r, cy = s.heartY + r, k = s.heartIcon / 21; /* the heart's own drawing is 21 × 18, centred on 12 / 12 */
+  const g = gscale ? `<g fill="none" stroke="var(--guide)" stroke-width="${2.4 / gscale}"><path d="M${cx - r - 2} ${cy} H${cx + r + 2} M${cx} ${cy - r - 2} V${cy + r + 2}" opacity=".6"/></g>` : '';
+  return `<g style="filter:drop-shadow(0 1px 1.5px rgba(25,42,33,.22))"><circle cx="${cx}" cy="${cy}" r="${r}" fill="${s.heartBg}" fill-opacity="${s.heartBgOp / 100}"/></g>` +
+    `<path d="${HEART_D}" fill="${s.heartColor}" transform="translate(${(cx - 12 * k).toFixed(2)} ${(cy - 12 * k).toFixed(2)}) scale(${k.toFixed(4)})"/>${g}`;
+}
+const HEART = '<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>';
+function heartHTML() { const s = P.s; return `<span class="heart" style="width:${s.heartSize}px;height:${s.heartSize}px;top:${s.heartY}px;right:${s.heartX}px;color:${s.heartColor}">${HEART.replace('<svg', `<svg width="${s.heartIcon}" height="${s.heartIcon}"`)}</span>`; }
+function selShadow() { const s = P.s; return `0 0 0 ${s.selRing1}px #fff, 0 0 0 ${s.selRing1 + s.selRing2}px ${s.selColor}, 0 4px 12px rgba(0,0,0,${s.selShadow / 100})`; }
+function markerEl(kind, count, opt = {}) {
+  const el = document.createElement('span'); el.className = 'mk';
+  el.dataset.kind = kind; el.dataset.count = count;
+  el.innerHTML = markerSVG(kind, count, Object.assign({}, opt, {heart: !!opt.saved}));
+  if (opt.saved) el.style.zIndex = 3; /* the heart stays above neighbouring icons */
+  if (opt.selected) { el.style.transform = `translate(-50%,-50%) scale(${P.s.selScale / 100})`; el.style.boxShadow = selShadow(); }
+  return el;
+}
+
+/* ---------- Animations ---------- */
+const EASE = {spring: 'cubic-bezier(.34,1.56,.64,1)', smooth: 'cubic-bezier(.2,.8,.2,1)', snappy: 'cubic-bezier(.5,0,.2,1)', linear: 'linear'};
+const T0 = 'translate(-50%,-50%)';
+const sel = () => P.s.selScale / 100;
+/* Spring on select – every step is adjustable: peak, dip, when they happen, extra bounces, squash. */
+function springKF() {
+  const s = P.s, end = sel(), pk = s.springPeak / 100, dp = s.springDip / 100, sq = s.springSquash / 100;
+  const t1 = Math.min(.9, s.springPeakAt / 100), t2 = Math.min(.95, Math.max(t1 + .05, s.springDipAt / 100));
+  const fr = [{t: 0, v: 1, k: 0}, {t: t1, v: pk, k: 1}, {t: t2, v: dp, k: -1}];
+  let up = end + (pk - end) * .35, down = end - (end - dp) * .35, last = t2;
+  for (let b = 2; b <= s.springBounces; b++) {
+    const t = last + (1 - last) * .5; fr.push(b % 2 === 0 ? {t, v: up, k: .5} : {t, v: down, k: -.5}); last = t;
+    up = end + (up - end) * .4; down = end - (end - down) * .4;
+  }
+  fr.push({t: 1, v: end, k: 0});
+  return fr.map(f => ({transform: `${T0} scale(${(f.v * (1 + sq * f.k)).toFixed(3)}, ${(f.v * (1 - sq * f.k)).toFixed(3)})`, offset: f.t}));
+}
+const ANIM = {
+  hover: {
+    none: {label: 'Без'},
+    lift: {label: 'Повдигане', kf: s => [{transform: `${T0} ${s}`, filter: 'none'}, {transform: `${T0} translateY(-3px) ${s}`, filter: 'drop-shadow(0 6px 6px rgba(0,0,0,.18))'}]},
+    grow: {label: 'Уголемяване', kf: s => [{transform: `${T0} ${s}`}, {transform: `${T0} ${s} scale(1.1)`}]},
+    halo: {label: 'Ореол', kf: () => [{boxShadow: '0 0 0 0 rgba(255,189,71,0)'}, {boxShadow: '0 0 0 7px rgba(255,189,71,.35)'}]},
+    tilt: {label: 'Накланяне', kf: s => [{transform: `${T0} ${s}`}, {transform: `${T0} ${s} rotate(-8deg)`}]},
+  },
+  tap: {
+    none: {label: 'Без'},
+    spring: {label: 'Пружина', kf: () => springKF()},
+    bounce: {label: 'Подскок', kf: () => [{transform: `${T0} scale(${sel()})`}, {transform: `${T0} translateY(-12px) scale(${sel()})`, offset: .3}, {transform: `${T0} scale(${sel()})`, offset: .55}, {transform: `${T0} translateY(-4px) scale(${sel()})`, offset: .75}, {transform: `${T0} scale(${sel()})`}]},
+    ripple: {label: 'Вълна', ripple: true, kf: () => [{transform: `${T0} scale(1)`}, {transform: `${T0} scale(${sel()})`}]},
+    flip: {label: 'Обръщане', kf: () => [{transform: `${T0} perspective(200px) rotateY(0) scale(1)`}, {transform: `${T0} perspective(200px) rotateY(180deg) scale(1.15)`, offset: .5}, {transform: `${T0} perspective(200px) rotateY(360deg) scale(${sel()})`}]},
+    jelly: {label: 'Желе', kf: () => [{transform: `${T0} scale(1,1)`}, {transform: `${T0} scale(1.25,.85)`, offset: .3}, {transform: `${T0} scale(.9,1.15)`, offset: .55}, {transform: `${T0} scale(1.15,.95)`, offset: .75}, {transform: `${T0} scale(${sel()})`}]},
+  },
+  selected: {
+    none: {label: 'Без'},
+    pulse: {label: 'Пулсиращ ореол', loop: true, kf: () => [{boxShadow: `${selShadow()}, 0 0 0 0 rgba(255,189,71,.55)`}, {boxShadow: `${selShadow()}, 0 0 0 14px rgba(255,189,71,0)`}]},
+    breathe: {label: 'Дишане', loop: true, alt: true, kf: () => [{transform: `${T0} scale(${sel()})`}, {transform: `${T0} scale(${sel() + .06})`}]},
+    beacon: {label: 'Фар', loop: true, ripple: true},
+  },
+  appear: {
+    none: {label: 'Без'},
+    rise: {label: 'Изплуване', kf: () => [{opacity: 0, transform: `${T0} translateY(8px) scale(.6)`}, {opacity: 1, transform: `${T0} scale(1)`}]},
+    pop: {label: 'Пукване', kf: () => [{opacity: 0, transform: `${T0} scale(0)`}, {opacity: 1, transform: `${T0} scale(1.18)`, offset: .6}, {opacity: 1, transform: `${T0} scale(1)`}]},
+    drop: {label: 'Падане', kf: () => [{opacity: 0, transform: `${T0} translateY(-28px)`}, {opacity: 1, transform: `${T0} translateY(0)`, offset: .55}, {transform: `${T0} translateY(-6px)`, offset: .75}, {transform: `${T0} translateY(0)`}]},
+    fade: {label: 'Избледняване', kf: () => [{opacity: 0}, {opacity: 1}]},
+  },
+  split: {
+    none: {label: 'Без'},
+    burst: {label: 'Разпръскване от групата'},
+    fan: {label: 'Ветрило с пауза'},
+    fade: {label: 'Само избледняване (най-леко)'},
+    pop: {label: 'Пукване на място'},
+    shrink: {label: 'Свиване, после разгръщане'},
+    slide: {label: 'Бързо плъзгане'},
+    ripple: {label: 'Вълна от групата'},
+  },
+};
+
+/* ---------- Controls ---------- */
+const R_FIELDS = [
+  {sec: 'Капка'},
+  {k: 'size', l: 'Големина', min: 18, max: 60, st: .5, u: 'px', hint: 'Диаметърът на главата на капката.'},
+  {k: 'fill', l: 'Цвят на капката', type: 'color'},
+  {k: 'pinL', l: 'Дължина на върха', min: 115, max: 240, st: 1, u: '% от радиуса', hint: 'Колко надолу стига върхът – той сочи точното място на картата.'},
+  {k: 'pinRound', l: 'Заобляне на върха', min: 0, max: 140, st: 1, u: '%', hint: '0 – остър връх; повече – по-обло дъно.'},
+  {sec: 'Кант'},
+  {k: 'border', l: 'Дебелина на канта', min: 0, max: 6, st: .5, u: 'px'},
+  {k: 'borderColor', l: 'Цвят на канта', type: 'color'},
+  {sec: 'Вътрешен кръг'},
+  {k: 'hole', l: 'Големина', min: 20, max: 80, st: 1, u: '% от капката'},
+  {k: 'holeColor', l: 'Цвят', type: 'color'},
+  {k: 'holeY', l: 'Отместване нагоре / надолу', min: -30, max: 30, st: .5, u: '% от радиуса'},
+  {sec: 'Число'},
+  {k: 'one', l: 'Единичен имот', type: 'seg', opts: [['dot', 'Само кръгче'], ['num', 'Число 1']]},
+  {k: 'digit', l: 'Цвят на числото', type: 'color'},
+  {k: 'dScale', l: 'Големина на числото', min: 50, max: 150, st: 1, u: '%'},
+  {k: 'dWeight', l: 'Плътност', min: 400, max: 900, st: 100, u: ''},
+  {sec: 'Сянка'},
+  {k: 'shY', l: 'Отместване надолу', min: 0, max: 8, st: .5, u: 'px'},
+  {k: 'shBlur', l: 'Размазване', min: 0, max: 20, st: .5, u: 'px'},
+  {k: 'shOp', l: 'Плътност', min: 0, max: 60, st: 1, u: '%'}
+];
+const kindFields = kind => kind === 'r' ? R_FIELDS : [
+  {sec: 'Кръг'},
+  {k: 'size', l: 'Диаметър', min: 20, max: 60, st: .5, u: 'px'},
+  {k: 'fill', l: 'Цвят на кръга', type: 'color'},
+  {k: 'ring', l: 'Рамка отвътре', min: 0, max: 6, st: .5, u: 'px'},
+  {k: 'ringColor', l: 'Цвят на рамката', type: 'color'},
+  {k: 'border', l: 'Кант отвън', min: 0, max: 6, st: .5, u: 'px'},
+  {k: 'borderColor', l: 'Цвят на канта', type: 'color'},
+  ...(kind === 'r' ? [{k: 'shape', l: 'Форма', type: 'seg', opts: [['pin', 'Капка (локация)'], ['circle', 'Кръг']]}, {k: 'pinL', l: 'Дължина на върха', min: 115, max: 220, st: 1, u: '% от радиуса', hint: 'Колко надолу стига острият връх на капката – върхът сочи точното място на картата.'}, {k: 'pinRound', l: 'Заобляне на върха', min: 0, max: 140, st: 1, u: '%', hint: '0 – остър връх; повече – по-обло и по-меко дъно на капката.'}] : []),
+  {sec: 'Сянка'},
+  {k: 'shY', l: 'Отместване надолу', min: 0, max: 8, st: .5, u: 'px'},
+  {k: 'shBlur', l: 'Размазване', min: 0, max: 20, st: .5, u: 'px'},
+  {k: 'shOp', l: 'Плътност', min: 0, max: 60, st: 1, u: '%'},
+  {sec: 'Рисунка'},
+  {k: 'glyph', l: 'Цвят на рисунката', type: 'color'},
+  ...(kind === 'a' ? [{k: 'art', type: 'apick'}] : []),
+  {k: 'gH', l: 'Височина (Y)', min: 30, max: 100, st: .1, u: '% от кръга'},
+  {k: 'gStretch', l: 'Пропорция по X', min: 60, max: 140, st: 1, u: '%', hint: '100 % е оригиналната пропорция. Над 100 % – по-широка, под 100 % – по-тясна.'},
+  {k: 'gX', l: 'Отместване по X', min: -20, max: 20, st: .5, u: '% от кръга'},
+  {k: 'gY', l: 'Отместване по Y', min: -20, max: 20, st: .5, u: '% от кръга'},
+  {k: 'sw', l: 'Дебелина на линиите', min: 10, max: 40, st: 1, u: '', hint: '22 е одобрената дебелина (в единиците на рисунката).'},
+  {sec: 'Цифри'},
+  {k: 'digit', l: 'Цвят на цифрите', type: 'color'},
+  {k: 'dScale', l: 'Големина', min: 60, max: 160, st: 1, u: '%', hint: '100 % = размерът в demo.abella.bg.'},
+  {k: 'dWeight', l: 'Плътност', min: 300, max: 900, st: 100, u: '', fmt: v => ({300: '300 тънки', 400: '400 нормални', 500: '500 средни', 600: '600 полудебели', 700: '700 дебели', 800: '800 много дебели', 900: '900 черни'})[v]},
+  {k: 'dWidth', l: 'Ширина на числото', min: 60, max: 140, st: 1, u: '%', hint: 'Сгъстява или разтяга цифрите на ширина, без да мени височината им.'},
+  {k: 'adjust', l: 'Сгъстяване', type: 'seg', opts: [['spacingAndGlyphs', 'Цифри и разстояния'], ['spacing', 'Само разстояния'], ['none', 'Без']]},
+  {k: 'tnum', l: 'Еднаква ширина на цифрите', type: 'seg', opts: [[true, 'Да'], [false, 'Не']]},
+  {k: 'dX', l: 'Отместване по X (всички)', min: -120, max: 120, st: 1, u: ''},
+  {k: 'dY', l: 'Отместване по Y (всички)', min: -120, max: 120, st: 1, u: ''},
+  {sec: 'Вариант', sub: true},
+];
+const stateFields = () => [
+  {sec: 'Голяма група · изключена'},
+  {type: 'note', l: 'Функцията е изключена: всички групи са с еднакъв размер – колкото единичната иконка, без значение колко обекта съдържат. Полетата са запазени само за справка.'},
+  {k: 'bigFrom', l: 'Голяма група от', min: 10, max: 200, st: 5, u: 'обекта', off: true},
+  {k: 'bigScale', l: 'Уголемяване', min: 100, max: 140, st: 1, u: '%', off: true},
+  {sec: 'Избрана иконка'},
+  {k: 'selScale', l: 'Мащаб', min: 100, max: 140, st: 1, u: '%'},
+  {k: 'selRing1', l: 'Бял пръстен', min: 0, max: 6, st: .5, u: 'px'},
+  {k: 'selRing2', l: 'Цветен пръстен', min: 0, max: 6, st: .5, u: 'px'},
+  {k: 'selColor', l: 'Цвят на пръстена', type: 'color'},
+  {k: 'selShadow', l: 'Сянка', min: 0, max: 60, st: 1, u: '%'},
+  {sec: 'Сърце (запазен обект)'},
+  {k: 'heartSize', l: 'Кръгче', min: 12, max: 26, st: 1, u: 'px'},
+  {k: 'heartIcon', l: 'Сърце', min: 8, max: 18, st: 1, u: 'px'},
+  {k: 'heartColor', l: 'Цвят на сърцето', type: 'color'},
+  {k: 'heartBg', l: 'Пълнеж на кръгчето', type: 'color'},
+  {k: 'heartBgOp', l: 'Плътност на пълнежа', min: 0, max: 100, st: 1, u: '%', hint: '0 % – само сърце без кръгче.'},
+  {k: 'heartX', l: 'Отстояние вдясно', min: -14, max: 6, st: 1, u: 'px'},
+  {k: 'heartY', l: 'Отстояние горе', min: -14, max: 6, st: 1, u: 'px'},
+  {sec: 'Анимации при взаимодействие'},
+  {k: 'hover', l: 'При посочване с мишката', type: 'seg', opts: Object.entries(ANIM.hover).map(([k, v]) => [k, v.label])},
+  {k: 'tap', l: 'При щракване (избор)', type: 'seg', opts: Object.entries(ANIM.tap).map(([k, v]) => [k, v.label])},
+  {k: 'selected', l: 'Докато е избрана', type: 'seg', opts: Object.entries(ANIM.selected).map(([k, v]) => [k, v.label])},
+  {k: 'appear', l: 'Поява на картата', type: 'seg', opts: Object.entries(ANIM.appear).map(([k, v]) => [k, v.label])},
+  {k: 'split', l: 'Как се разделя групата', hint: 'Всички варианти движат само размер, място и прозрачност – смятат се на видеокартата и не забавят картата. Най-лекото е „Само избледняване“, после „Бързо плъзгане“. „Вълна от групата“ добавя един кръг за кратко.', type: 'seg', opts: Object.entries(ANIM.split).map(([k, v]) => [k, v.label])},
+  {k: 'dur', l: 'Продължителност', min: 120, max: 1200, st: 20, u: 'ms'},
+  {k: 'ease', l: 'Движение', type: 'seg', opts: [['spring', 'Пружинка'], ['smooth', 'Плавно'], ['snappy', 'Рязко'], ['linear', 'Равномерно']]},
+  {k: 'stagger', l: 'Закъснение между иконките', min: 0, max: 120, st: 5, u: 'ms', hint: 'При поява и разделяне иконките тръгват една след друга.'},
+  {sec: 'Пружина при избор'},
+  {type: 'note', l: 'Важи, когато „При щракване“ е „Пружина“. Иконката тръгва от нормален размер, подскача до „Връх“, свива се до „Свиване“, после може да отскочи още няколко пъти и спира на мащаба за избрана иконка.'},
+  {k: 'springPeak', l: 'Връх', min: 100, max: 180, st: 1, u: '%'},
+  {k: 'springDip', l: 'Свиване след върха', min: 60, max: 120, st: 1, u: '%'},
+  {k: 'springPeakAt', l: 'Кога е върхът', min: 5, max: 80, st: 1, u: '% от времето'},
+  {k: 'springDipAt', l: 'Кога е свиването', min: 15, max: 95, st: 1, u: '% от времето'},
+  {k: 'springBounces', l: 'Брой отскоци', min: 1, max: 4, st: 1, u: '', fmt: v => ({1: '1 – един подскок', 2: '2', 3: '3', 4: '4 – пружинира дълго'})[v]},
+  {k: 'springSquash', l: 'Сплескване', min: 0, max: 30, st: 1, u: '%', hint: '0 % – еднакво по ширина и височина. Повече – при върха се разлива на ширина, при свиването – на височина, като желе.'},
+  {k: 'springDur', l: 'Продължителност', min: 150, max: 1500, st: 10, u: 'ms'},
+  {k: 'springDelay', l: 'Закъснение след щракването', min: 0, max: 400, st: 10, u: 'ms'},
+  {k: 'springEase', l: 'Движение', type: 'seg', opts: [['spring', 'Пружинка'], ['smooth', 'Плавно'], ['snappy', 'Рязко'], ['linear', 'Равномерно']]},
+  {type: 'btn', id: 'opt-spring', l: 'Оптимални настройки за телефон'},
+  {type: 'note', l: 'Оптимално: връх 122 %, свиване 96 %, върхът на 30 % и свиването на 62 % от времето, 2 отскока, леко сплескване 6 %, 380 ms, без закъснение, плавно движение. Подскокът се вижда ясно, но приключва бързо, преди картата да е стигнала до иконката.'},
+  {type: 'btn', id: 'try-spring', l: 'Пробвай пружината на картата'},
+];
+const fmtNum = v => (Math.round(v * 10) / 10).toLocaleString('bg-BG');
+function field(obj, f, path) {
+  if (f.type === 'btn') return `<div class="f"><button type="button" class="btn" id="${f.id}" style="grid-column:1/-1">${f.l}</button></div>`;
+  if (f.type === 'note') return (obj.art > 0 && /Върхът/.test(f.l)) ? '' : `<p class="note">${f.l}</p>`;
+  if (f.type === 'apick') return `<div class="f"><label>Вариант на рисунката</label><output>${A_VARS[obj.art || 0].n}</output><div class="artpick">${A_VARS.map((v, i) => `<button type="button" data-aart="${i}" aria-pressed="${(obj.art || 0) === i}" title="${v.n}">${markerSVG('a', 12, {art: i, shadow: false})}<span>${i ? i + ' · ' : ''}${v.n}</span></button>`).join('')}</div><p class="hint">Одобрена е иконката с три прозореца (два отгоре, един вдясно). Старата е оставена като избор.</p></div>`;
+  if (f.type === 'artpick') return `<div class="f"><label>Вариант на рисунката</label><output>${B_VARS[obj.art || 0].n}</output><div class="artpick">${B_VARS.map((v, i) => `${i === 11 ? '<p class="pick-h">Между сегашната и № 3</p>' : i === 21 ? '<p class="pick-h">Варианти на № 19 – покривът на еднакво отстояние от канта</p>' : i === 31 ? '<p class="pick-h">Микс</p>' : ''}<button type="button" data-art="${i}" aria-pressed="${(obj.art || 0) === i}" title="${v.n}">${markerSVG('b', 7, {art: i, shadow: false})}<span>${i ? i + ' · ' : ''}${v.n}</span></button>`).join('')}</div><p class="hint">Сменя само рисунката в кръга. Кантът, цветовете и цифрите остават.</p></div>`;
+  const v = obj[f.k], id = 'c-' + path.replace(/\W/g, '-');
+  if (f.off) return `<div class="f off" aria-disabled="true"><label for="${id}">${f.l}</label><output>изключено</output><input type="range" id="${id}" min="${f.min}" max="${f.max}" step="${f.st}" value="${v}" disabled></div>`;
+  if (f.type === 'color') return `<div class="f"><label for="${id}">${f.l}</label><div class="row"><input type="color" id="${id}" data-p="${path}" value="${v}"><input type="text" data-p="${path}" value="${v}" aria-label="${f.l} – код"></div></div>`;
+  if (f.type === 'seg') return `<div class="f"><label>${f.l}</label><div class="seg" data-p="${path}">${f.opts.map(([o, t]) => `<button type="button" data-v="${o}" aria-pressed="${String(o) === String(v)}">${t}</button>`).join('')}</div>${f.hint ? `<p class="hint">${f.hint}</p>` : ''}</div>`;
+  return `<div class="f"><label for="${id}">${f.l}</label><output id="o-${id}">${f.fmt ? f.fmt(v) : fmtNum(v) + (f.u ? ' ' + f.u : '')}</output><input type="range" id="${id}" data-p="${path}" min="${f.min}" max="${f.max}" step="${f.st}" value="${v}">${f.hint ? `<p class="hint">${f.hint}</p>` : ''}</div>`;
+}
+const FIELD_BY_PATH = {};
+function renderCtrls() {
+  let html = '';
+  const fields = tab === 's' ? stateFields() : kindFields(tab), obj = tab === 's' ? P.s : P[tab];
+  let open = false;
+  for (const f of fields) {
+    if (f.sec) {
+      if (open) html += '</div>';
+      if (f.sub) {
+        const n = loupeVar, V = P[tab].v[n];
+        html += `<div class="sec"><h2>Цифри – ${VAR_NAMES[n].toLowerCase()} <small>${['1 цифра', '2 цифри', '3 цифри', '4 цифри'][n]}</small></h2><div class="f"><label for="link-vars">Промени и четирите варианта заедно</label><input type="checkbox" id="link-vars"${linkVars ? ' checked' : ''}><p class="hint">${linkVars ? 'Включено: плъзгачите местят и разтягат цифрите на единици, десетици, стотици и хиляди с еднаква стъпка.' : `Изключено: плъзгачите отдолу важат само за иконките с ${['1 цифра', '2 цифри', '3 цифри', '4 цифри'][n]} – на картата са оградени със синьо. Другите варианти избираш с бутоните над лупата.`}</p></div>`;
+        const vf = [{k: 'x', l: 'Център по X', min: V.x - 150, max: V.x + 150, st: 1, u: ''}, {k: 'y', l: 'Център по Y', min: V.y - 150, max: V.y + 150, st: 1, u: ''}, {k: 'w', l: 'Ширина (textLength)', min: 60, max: 700, st: 1, u: ''}];
+        if (tab === 'a') vf.push({k: 't', l: 'Линия вляво – край', min: 836, max: 1050, st: .1, u: ''}, {k: 'e', l: 'Линия вдясно – край', min: 1000, max: 1224, st: .1, u: ''});
+        for (const g of vf) { FIELD_BY_PATH[`${tab}.v.${n}.${g.k}`] = g; html += field(V, g, `${tab}.v.${n}.${g.k}`); }
+        open = true; continue;
+      }
+      html += `<div class="sec"><h2>${f.sec}</h2>`; open = true; continue;
+    }
+    FIELD_BY_PATH[`${tab}.${f.k}`] = f;
+    html += field(obj, f, `${tab}.${f.k}`);
+  }
+  if (open) html += '</div>';
+  $('#ctrls').innerHTML = html;
+}
+function getPath(p) { const ks = p.split('.'); let o = tab === 's' && ks[0] === 's' ? P : P; for (let i = 0; i < ks.length - 1; i++) o = o[ks[i]]; return [o, ks[ks.length - 1]]; }
+$('#ctrls').addEventListener('input', e => {
+  if (e.target.id === 'link-vars') { linkVars = e.target.checked; try { localStorage.setItem(STORE + '-link3', linkVars ? '1' : '0'); } catch (_) {} renderCtrls(); markAffected(); return; }
+  const p = e.target.dataset.p; if (!p) return;
+  const [o, k] = getPath(p), f = FIELD_BY_PATH[p];
+  const vm = p.match(/^(b|a)\.v\.(\d)\.(x|y|w|t|e)$/);
+  if (vm && linkVars && e.target.type === 'range') { const delta = +e.target.value - o[k]; P[vm[1]].v.forEach((V, i) => { if (i !== +vm[2] && k in V) V[k] = Math.round((V[k] + delta) * 10) / 10; }); }
+  if (e.target.type === 'range') { o[k] = +e.target.value; const out = $('#o-c-' + p.replace(/\W/g, '-')); if (out) out.textContent = f.fmt ? f.fmt(o[k]) : fmtNum(o[k]) + (f.u ? ' ' + f.u : ''); }
+  else if (e.target.type === 'color') { o[k] = e.target.value; e.target.nextElementSibling.value = e.target.value; }
+  else if (e.target.type === 'text') { if (/^#[0-9a-f]{6}$/i.test(e.target.value)) { o[k] = e.target.value.toLowerCase(); e.target.previousElementSibling.value = o[k]; } else return; }
+  changed(p);
+});
+$('#ctrls').addEventListener('click', e => {
+  if (e.target.closest('#opt-spring')) { Object.assign(P.s, {tap: 'spring', springPeak: 122, springDip: 96, springPeakAt: 30, springDipAt: 62, springBounces: 2, springSquash: 6, springDur: 380, springDelay: 0, springEase: 'smooth'}); renderCtrls(); changed('s.spring'); setTimeout(() => demo('tap'), 200); toast('Пружината е с оптималните настройки'); return; }
+  if (e.target.closest('#try-spring')) { if (P.s.tap !== 'spring') toast('Избери „Пружина“ при „При щракване“, за да я видиш'); demo('tap'); return; }
+  const aa = e.target.closest('[data-aart]'); if (aa) { P.a.art = +aa.dataset.aart; renderCtrls(); changed('a.art'); return; }
+  const ab = null; if (ab) { P.b.art = +ab.dataset.art; const dv = B_VARS[P.b.art].digits; if (dv) { dv.forEach((d, i) => Object.assign(P.b.v[i], d)); P.b.dX = 0; P.b.dY = 0; toast('Цифрите са преместени на мястото за „' + B_VARS[P.b.art].n + '“'); } renderCtrls(); changed('b.art'); return; }
+  const b = e.target.closest('.seg button'); if (!b) return;
+  const seg = b.parentNode, p = seg.dataset.p, [o, k] = getPath(p);
+  o[k] = b.dataset.v === 'true' ? true : b.dataset.v === 'false' ? false : b.dataset.v;
+  seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  changed(p);
+  if (/^s\.(tap|hover|selected|appear|split)$/.test(p)) demo(k);
+});
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-t]'); if (!b) return;
+  tab = b.dataset.t; $$('#tabs button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  if (tab !== 's') loupeKind = tab;
+  $('#lheart').checked = tab === 's'; /* heart on the loupe: on for „Състояния и анимации“, off for the icon tabs */
+  renderCtrls(); renderLoupe(); renderVars(); markAffected();
+});
+
+/* ---------- Views ---------- */
+function renderVars() {
+  $('#vars').innerHTML = ['b', 'a', 'r'].map(k => `<button class="btn small" data-lk="${k}" aria-pressed="${k === loupeKind}" style="${k === loupeKind ? 'background:var(--ink);color:var(--surface);border-color:var(--ink)' : ''}">${k === 'b' ? 'Сграда' : k === 'r' ? 'Наем' : 'Апартамент'}</button>`).join('') +
+    '<span style="width:6px"></span>' + VAR_NAMES.map((t, i) => `<button class="btn small" data-lv="${i}" style="${i === loupeVar ? 'background:var(--accent);border-color:var(--accent);color:#2a1d00' : ''}">${t}</button>`).join('');
+}
+$('#vars').addEventListener('click', e => {
+  const k = e.target.closest('[data-lk]'), v = e.target.closest('[data-lv]');
+  if (k) { loupeKind = k.dataset.lk; if (tab !== 's') { tab = loupeKind; $$('#tabs button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.t === tab))); } }
+  if (v) loupeVar = +v.dataset.lv;
+  renderVars(); renderLoupe(); if (tab !== 's') renderCtrls(); markAffected();
+});
+function renderLoupe() {
+  const box = $('#loupe'), K = P[loupeKind], W = (K.size + 2 * K.border) * (loupeKind === 'r' ? (1 + K.pinL / 100) / 2 + .02 : 1), lh = $('#lheart').checked, ext = lh ? Math.max(0, -P.s.heartX, -P.s.heartY) + 4 : 0, sc = Math.min((box.clientHeight - 40) / (W + 2 * ext), (box.clientWidth - 40) / (W + 2 * ext), 7);
+  box.innerHTML = markerSVG(loupeKind, SAMPLE[loupeKind][loupeVar], {scale: sc, guides: $('#guides').checked, heart: lh}) + `<span class="loupe-meta">×${fmtNum(sc)} · ${fmtNum(W)} × ${fmtNum(W)} px с канта</span>`;
+}
+$('#guides').addEventListener('change', renderLoupe);
+$('#lheart').addEventListener('change', renderLoupe);
+function renderReal() {
+  let h = '<span></span>' + VAR_NAMES.map(t => `<span class="cap">${t.toLowerCase()}</span>`).join('');
+  for (const k of ['b', 'a', 'r']) {
+    h += `<b>${k === 'b' ? 'Сграда' : k === 'r' ? 'Наем' : 'Апартамент'}</b>`;
+    SAMPLE[k].forEach(n => { h += `<span style="position:relative;display:grid;place-items:center;height:52px;width:52px">${markerSVG(k, n)}</span>`; });
+  }
+  $('#real').innerHTML = h;
+  const st = $('#states'); st.innerHTML = '';
+  const fig = (cap, el) => { const f = document.createElement('figure'); const w = document.createElement('span'); w.style.cssText = 'position:relative;width:60px;height:60px;display:block'; el.style.left = '50%'; el.style.top = '50%'; w.append(el); f.append(w); const c = document.createElement('figcaption'); c.textContent = cap; f.append(c); st.append(f); };
+  fig('Група 109 – същият размер', markerEl('b', 109));
+  fig('Избрана', markerEl('b', 1, {selected: true}));
+  fig('Запазена', markerEl('a', 1, {saved: true}));
+  fig('Група със запазен', markerEl('a', 12, {saved: true}));
+}
+
+/* ---------- Scene ---------- */
+const SCENE = [
+  {k: 'b', n: 1, x: .08, y: .24}, {k: 'b', n: 7, x: .3, y: .2}, {k: 'b', n: 63, x: .52, y: .3}, {k: 'b', n: 109, x: .74, y: .22, group: true}, {k: 'b', n: 1250, x: .92, y: .34, saved: true},
+  {k: 'a', n: 1, x: .12, y: .72, saved: true}, {k: 'a', n: 4, x: .32, y: .62}, {k: 'a', n: 12, x: .5, y: .78}, {k: 'a', n: 100, x: .68, y: .66}, {k: 'a', n: 1000, x: .88, y: .8},
+  {k: 'r', n: 1, x: .2, y: .47}, {k: 'r', n: 8, x: .42, y: .45}, {k: 'r', n: 24, x: .62, y: .48}, {k: 'r', n: 1, x: .82, y: .52},
+];
+let selEl = null, selLoop = [];
+function renderScene() {
+  setTimeout(markAffected, 0);
+  const sc = $('#scene'); sc.querySelectorAll('.mk').forEach(m => m.remove()); selEl = null; selLoop = [];
+  SCENE.forEach((m, i) => {
+    const el = markerEl(m.k, m.n, {big: m.n >= P.s.bigFrom, saved: m.saved});
+    el.style.left = (m.x * 100) + '%'; el.style.top = (m.y * 100) + '%'; el.dataset.i = i; el.tabIndex = 0; el.setAttribute('role', 'button');
+    el.setAttribute('aria-label', `${m.k === 'b' ? 'Сгради' : 'Имоти'}: ${m.n}`);
+    sc.append(el);
+  });
+}
+const opt = (extra = {}) => Object.assign({duration: P.s.dur, easing: EASE[P.s.ease], fill: 'both'}, extra);
+const curScale = el => el === selEl ? `scale(${sel()})` : 'scale(1)';
+function hover(el, on) {
+  const H = ANIM.hover[P.s.hover]; if (!H.kf) return;
+  /* the first time the pointer leaves an icon right after it was selected: no hover-out animation,
+     so the spring is not followed by a second jump; later hovers on the selected icon work as usual */
+  if (on && el.getAnimations().some(a => a !== el._h && a.playState === 'running')) return; /* don't fight an entrance / split animation */
+  if (!on && el._skipLeave) { el._skipLeave = false; if (el._h) { el._h.cancel(); el._h = null; } return; }
+  el._h && el._h.cancel();
+  const kf = H.kf(curScale(el));
+  el._h = el.animate(on ? kf : kf.slice().reverse(), {duration: Math.min(260, P.s.dur), easing: EASE.smooth, fill: 'forwards'});
+}
+function ripple(el, loop) {
+  const r = document.createElement('span'); r.className = 'ripple'; r.style.boxShadow = `0 0 0 2px ${P.s.selColor}`; el.append(r);
+  const a = r.animate([{transform: 'scale(1)', opacity: .9}, {transform: 'scale(2.4)', opacity: 0}], {duration: Math.max(500, P.s.dur * 1.6), easing: 'ease-out', iterations: loop ? Infinity : 1});
+  if (!loop) a.finished.then(() => r.remove()).catch(() => {}); return {cancel() { a.cancel(); r.remove(); }};
+}
+function clearSel() {
+  selLoop.forEach(a => a.cancel()); selLoop = [];
+  if (selEl) { selEl.getAnimations().forEach(a => a.cancel()); selEl.style.transform = ''; selEl.style.boxShadow = ''; selEl.style.zIndex = ''; }
+  selEl = null;
+}
+function select(el) {
+  if (selEl === el) return;
+  clearSel(); if (el._h) { el._h.cancel(); el._h = null; } el._skipLeave = el.matches(':hover'); selEl = el; el.style.zIndex = 5;
+  el.style.transform = `${T0} scale(${sel()})`; el.style.boxShadow = selShadow();
+  const A = ANIM.tap[P.s.tap];
+  const sp = P.s.tap === 'spring';
+  if (A.kf) el.animate(A.kf(), opt(sp ? {fill: 'backwards', duration: P.s.springDur, easing: EASE[P.s.springEase], delay: P.s.springDelay} : {fill: 'none'}));
+  if (A.ripple) ripple(el);
+  const L = ANIM.selected[P.s.selected];
+  setTimeout(() => {
+    if (selEl !== el) return;
+    if (L.kf) selLoop.push(el.animate(L.kf(), {duration: Math.max(900, P.s.dur * 2.4), iterations: Infinity, direction: L.alt ? 'alternate' : 'normal', easing: 'ease-in-out'}));
+    if (L.ripple) selLoop.push(ripple(el, true));
+  }, A.kf || A.ripple ? (sp ? P.s.springDur + P.s.springDelay : P.s.dur) : 0);
+}
+const scene = $('#scene');
+scene.addEventListener('pointerover', e => { const m = e.target.closest('.mk'); if (m && !m.contains(e.relatedTarget)) hover(m, true); });
+scene.addEventListener('pointerout', e => { const m = e.target.closest('.mk'); if (m && !m.contains(e.relatedTarget)) hover(m, false); });
+scene.addEventListener('click', e => { const m = e.target.closest('.mk'); if (!m) { clearSel(); return; } if (P.s.groupTap === 'split' && +m.dataset.count > 1) splitMarker(m); else select(m); });
+scene.addEventListener('keydown', e => { const m = e.target.closest('.mk'); if (m && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); if (P.s.groupTap === 'split' && +m.dataset.count > 1) splitMarker(m); else select(m); } });
+function playAppear() {
+  const A = ANIM.appear[P.s.appear]; clearSel();
+  $$('#scene .mk').forEach((m, i) => { if (A.kf) m.animate(A.kf(), opt({delay: i * P.s.stagger, fill: 'backwards'})); });
+}
+/* Tap on a group: it splits into up to three smaller groups / single objects around it. */
+function partsOf(n) { const k = Math.min(3, n), out = []; let left = n; for (let i = 0; i < k; i++) { const v = i === k - 1 ? left : Math.max(1, Math.round(left * (i === 0 ? .45 : .55))); out.push(v); left -= v; } return out.filter(v => v > 0); }
+function splitMarker(g) {
+  clearSel();
+  const sc = $('#scene'), r = sc.getBoundingClientRect(), gx = parseFloat(g.style.left), gy = parseFloat(g.style.top), kind = g.dataset.kind, n = +g.dataset.count;
+  const parts = partsOf(n), rad = 62, mode = P.s.split, t = P.s.dur;
+  const kids = parts.map((cnt, i) => {
+    const a = -Math.PI / 2 + i * 2 * Math.PI / parts.length + .4;
+    const x = Math.min(96, Math.max(4, gx + Math.cos(a) * rad / r.width * 100)), y = Math.min(92, Math.max(8, gy + Math.sin(a) * rad / r.height * 100));
+    const el = markerEl(kind, cnt); el.style.left = x + '%'; el.style.top = y + '%'; el.tabIndex = 0; el.setAttribute('role', 'button');
+    el.setAttribute('aria-label', `${kind === 'b' ? 'Сгради' : 'Имоти'}: ${cnt}`); sc.append(el);
+    return {el, i, px: +((gx - x) / 100 * r.width).toFixed(1), py: +((gy - y) / 100 * r.height).toFixed(1)}; /* rounded: a tiny 1e-15 value would make the keyframe invalid */
+  });
+  if (mode === 'none') { g.remove(); return; }
+  g.style.pointerEvents = 'none';
+  /* everything below animates only transform and opacity – the browser does it on the graphics card */
+  const out = (kf, o = {}) => g.animate(kf, Object.assign({duration: t * .5, fill: 'forwards', easing: EASE.smooth}, o)).finished.then(() => g.remove()).catch(() => g.remove());
+  const kidIn = (el, kf, o = {}) => el.animate(kf, Object.assign({duration: t, easing: EASE.smooth, fill: 'backwards'}, o));
+  const st = i => i * P.s.stagger;
+  if (mode === 'burst' || mode === 'fan') {
+    out([{opacity: 1, transform: `${T0} scale(1)`}, {opacity: 0, transform: `${T0} scale(.6)`}]);
+    kids.forEach(({el, i, px, py}) => kidIn(el, [{opacity: 0, transform: `${T0} translate(${px}px,${py}px) scale(.35)`}, {opacity: 1, offset: .3}, {opacity: 1, transform: `${T0} scale(1)`}],
+      {delay: (mode === 'fan' ? t * .5 : 0) + st(i), duration: Math.max(520, t * 1.2), easing: 'cubic-bezier(.25,.75,.3,1.08)'}));
+  } else if (mode === 'fade') {
+    out([{opacity: 1}, {opacity: 0}], {duration: t * .4});
+    kids.forEach(({el}) => kidIn(el, [{opacity: 0}, {opacity: 1}], {duration: t * .6}));
+  } else if (mode === 'pop') {
+    out([{opacity: 1}, {opacity: 0}], {duration: t * .3});
+    kids.forEach(({el, i}) => kidIn(el, [{opacity: 0, transform: `${T0} scale(0)`}, {opacity: 1, transform: `${T0} scale(1.15)`, offset: .65}, {opacity: 1, transform: `${T0} scale(1)`}], {delay: st(i)}));
+  } else if (mode === 'shrink') {
+    out([{transform: `${T0} scale(1)`}, {transform: `${T0} scale(0)`}], {duration: t * .45, easing: 'cubic-bezier(.5,0,.75,0)'});
+    kids.forEach(({el, i}) => kidIn(el, [{opacity: 0, transform: `${T0} scale(0)`}, {opacity: 1, transform: `${T0} scale(1)`}], {delay: t * .45 + st(i), duration: t * .6}));
+  } else if (mode === 'slide') {
+    out([{opacity: 1}, {opacity: 0}], {duration: 120});
+    kids.forEach(({el, px, py}) => kidIn(el, [{transform: `${T0} translate(${px}px,${py}px)`}, {transform: `${T0}`}], {duration: Math.min(260, t), easing: 'cubic-bezier(.2,.8,.2,1)'}));
+  } else if (mode === 'ripple') {
+    const ring = document.createElement('span'); ring.className = 'ripple'; ring.style.boxShadow = `0 0 0 2px ${P.s.selColor}`; g.append(ring);
+    ring.animate([{transform: 'scale(1)', opacity: .9}, {transform: 'scale(3)', opacity: 0}], {duration: t * 1.2, easing: 'ease-out'});
+    out([{opacity: 1}, {opacity: 0}], {duration: t * 1.2});
+    kids.forEach(({el, i}) => kidIn(el, [{opacity: 0, transform: `${T0} scale(.8)`}, {opacity: 1, transform: `${T0} scale(1)`}], {delay: t * .25 + st(i), duration: t * .6}));
+  }
+}
+function playSplit() {
+  if (P.s.groupTap !== 'split') { toast('Разделянето е изключено – включи отметката „Разделяне на група“'); return; }
+  const g = $$('#scene .mk').find(m => +m.dataset.count > 1 && SCENE[m.dataset.i]?.group) || $$('#scene .mk').find(m => +m.dataset.count > 1);
+  if (g) splitMarker(g);
+}
+function demo(which) {
+  if (which === 'appear') return playAppear();
+  if (which === 'split') return playSplit();
+  const m = $$('#scene .mk')[2]; if (!m) return; /* demo on the 63 building */
+  if (which === 'hover') { hover(m, true); setTimeout(() => hover(m, false), 900); return; }
+  clearSel(); select(m);
+}
+$('#play-appear').onclick = playAppear;
+$('#play-split').onclick = playSplit;
+$('#clear-sel').onclick = clearSel;
+const syncSplitBox = () => { $('#split-on').checked = P.s.groupTap === 'split'; };
+$('#split-on').addEventListener('change', e => { P.s.groupTap = e.target.checked ? 'split' : 'select'; save(); toast(e.target.checked ? 'Разделянето на групи е включено' : 'Разделянето на групи е изключено'); });
+$('#reset-scene').onclick = () => { renderScene(); };
+
+/* ---------- Export ---------- */
+function kfCSS(name, kf) {
+  if (!kf || !kf.length) return '';
+  const toDecl = f => Object.entries(f).filter(([k]) => k !== 'offset').map(([k, v]) => `${k.replace(/[A-Z]/g, m => '-' + m.toLowerCase())}: ${v};`).join(' ');
+  return `@keyframes ${name} {\n` + kf.map((f, i) => `  ${Math.round((f.offset ?? (i / (kf.length - 1))) * 100)}% { ${toDecl(f)} }`).join('\n') + '\n}\n';
+}
+function cssExport() {
+  const s = P.s, e = EASE[s.ease];
+  let out = `/* Abella – иконки на картата: анимации (от редактора) */\n.ml-marker { transform: translate(-50%,-50%); transition: none; }\n`;
+  const H = ANIM.hover[s.hover]; if (H.kf) out += kfCSS('ml-hover', H.kf('scale(1)')) + `.ml-marker:hover { animation: ml-hover 220ms ${EASE.smooth} forwards; }\n`;
+  const T = ANIM.tap[s.tap]; if (T.kf) out += kfCSS('ml-select', T.kf()) + (s.tap === 'spring' ? `.ml-marker.is-selected { animation: ml-select ${s.springDur}ms ${EASE[s.springEase]} ${s.springDelay}ms both; }\n` : `.ml-marker.is-selected { animation: ml-select ${s.dur}ms ${e} both; }\n`);
+  if (T.ripple) out += `/* вълна: псевдоелемент ::after, scale 1 → 2.4, opacity .9 → 0, ${Math.max(500, s.dur * 1.6)}ms ease-out */\n`;
+  const L = ANIM.selected[s.selected]; if (L.kf) out += kfCSS('ml-selected-loop', L.kf()) + `.ml-marker.is-selected { animation: ml-select ${s.dur}ms ${e} both, ml-selected-loop ${Math.max(900, s.dur * 2.4)}ms ease-in-out ${s.dur}ms infinite${L.alt ? ' alternate' : ''}; }\n`;
+  const A = ANIM.appear[s.appear]; if (A.kf) out += kfCSS('ml-appear', A.kf()) + `.ml-marker.is-new { animation: ml-appear ${s.dur}ms ${e} both; animation-delay: calc(var(--i, 0) * ${s.stagger}ms); }\n`;
+  out += `.ml-marker.is-selected { transform: translate(-50%,-50%) scale(${sel()}); box-shadow: ${selShadow()}; }\n`;
+  out += `@media (prefers-reduced-motion: reduce) { .ml-marker { animation: none !important; } }\n`;
+  return out;
+}
+function summary() {
+  const k = kind => { const K = P[kind], d = K.size, g = glyphBox(kind, d); return `${kind === 'b' ? 'СГРАДА' : kind === 'r' ? 'НАЕМ' : 'АПАРТАМЕНТ'}\n  кръг ${fmtNum(d)} px ${K.fill} · рамка отвътре ${K.ring} px ${K.ringColor} · кант ${K.border} px ${K.borderColor}\n  сянка 0 ${K.shY}px ${K.shBlur}px rgba(0,0,0,${K.shOp / 100})\n  рисунка ${K.glyph} · поле ${fmtNum(g.w)} × ${fmtNum(g.h)} px (височина ${K.gH} %, пропорция X ${K.gStretch} %) · отместване ${K.gX} % / ${K.gY} % · линия ${K.sw}${kind === 'b' ? ' · рисунка „Микс 23 + 28“ (окончателна)' : ''}${kind === 'b' && !K.art ? ` · връх на сградата Y ${fmtNum(buildingPeak(d, g))} (вместо 309, автоматично)` : ''}\n  цифри ${K.digit} · Inter ${K.dWeight} · ${K.dScale} % (font-size ${fmtNum(336 * .82 * K.dScale / 100)}) · ширина ${K.dWidth} % · ${K.adjust}${K.tnum ? ' · tabular-nums' : ''}\n  ` + K.v.map((V, i) => `${VAR_NAMES[i].toLowerCase()}: x ${V.x + K.dX}, y ${V.y + K.dY}, textLength ${fmtNum(V.w * .82 * K.dScale / 100 * K.dWidth / 100)}${V.t ? `, линии ${V.t}/${V.e}` : ''}`).join('\n  '); };
+  const s = P.s;
+  const R = P.r, kr = `НАЕМ (капка)\n  капка ${fmtNum(R.size)} px ${R.fill} · кант ${fmtNum(R.border)} px ${R.borderColor} · връх ${R.pinL} % · заобляне ${R.pinRound} %\n  вътрешен кръг ${R.hole} % ${R.holeColor} · отместване ${R.holeY} %\n  число ${R.digit} · ${R.dWeight} · ${R.dScale} % · единичен имот: ${R.one === 'dot' ? 'само кръгче' : 'число 1'}\n  сянка y ${R.shY} · blur ${R.shBlur} · ${R.shOp} %`;
+  return `${k('b')}\n\n${k('a')}\n\n${kr}\n\nСЪСТОЯНИЯ\n  голяма група: изключено – всички групи са с размера на единичната иконка\n  избрана: ×${s.selScale / 100}, ${selShadow()}\n  сърце: кръгче ${s.heartSize} px ${s.heartBg} (${s.heartBgOp} %), сърце ${s.heartIcon} px ${s.heartColor}, центрирани едно в друго, top ${s.heartY} px, right ${s.heartX} px\n  анимации: посочване „${ANIM.hover[s.hover].label}“, щракване „${ANIM.tap[s.tap].label}“, избрана „${ANIM.selected[s.selected].label}“, поява „${ANIM.appear[s.appear].label}“, разделяне „${ANIM.split[s.split].label}“ · ${s.dur} ms · ${s.ease}`;
+}
+function renderCode() { $('#code').textContent = summary(); }
+function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2200); }
+async function copy(text, msg) {
+  try { await navigator.clipboard.writeText(text); toast(msg); }
+  catch (_) { const c = $('#code'); c.textContent = text; const r = document.createRange(); r.selectNodeContents(c); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Текстът е маркиран – натисни Ctrl+C'); }
+}
+$('#copy-json').onclick = () => copy(JSON.stringify({app: 'Abella · иконки на картата', version: 1, icons: P}, null, 2), 'Настройките са копирани');
+$('#copy-svg').onclick = () => copy(markerSVG(loupeKind, SAMPLE[loupeKind][loupeVar], {shadow: false}), 'SVG е копиран');
+$('#copy-css').onclick = () => copy(cssExport(), 'CSS е копиран');
+$('#reset').onclick = () => {
+  if (!approvedLocal) { toast('Още няма записани одобрени настройки'); return; }
+  P = withR(mergeDeep(clone(DEF), clone(approvedLocal)), clone(approvedLocal)); save(); renderAll(); toast(`Върнати са одобрените от ${when(approvedAt)}`);
+};
+$('#approve').onclick = async () => {
+  approvedLocal = clone(P); approvedAt = Date.now(); saveLocal();
+  const ok = await dbWrite('settings/approved', {icons: clone(P), at: approvedAt});
+  showStatus(); toast(ok ? 'Записани като одобрени' : 'Записани като одобрени в този браузър');
+};
+$('#to-dev').onclick = () => { const d = $('#dev'); d.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start'}); d.classList.add('flash'); setTimeout(() => d.classList.remove('flash'), 1600); };
+$('#factory').onclick = () => { P = clone(DEF); save(); renderAll(); toast('Върнати са стойностите от тестовата карта'); };
+
+/* ---------- Refresh ---------- */
+let rT;
+function changed() { save(); renderLoupe(); renderReal(); renderCode(); clearTimeout(rT); rT = setTimeout(renderScene, 120); }
+function markAffected() {
+  const on = tab !== 's' && !linkVars;
+  $$('#scene .mk').forEach(m => { const hit = on && m.dataset.kind === tab && varOf(m.dataset.count) === loupeVar; m.style.outline = hit ? '2px dashed var(--guide)' : ''; m.style.outlineOffset = hit ? '3px' : ''; });
+}
+function renderAll() {
+  if (typeof syncSplitBox === 'function') syncSplitBox(); renderCtrls(); renderVars(); renderLoupe(); renderReal(); renderScene(); renderCode(); }
+addEventListener('resize', () => renderLoupe());
+renderAll(); showStatus(); connectDb().then(toPanel); toPanel();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { renderLoupe(); renderReal(); renderScene(); });
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) setTimeout(playAppear, 400);
+})();
+</script>
+</body></html>
