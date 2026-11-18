@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Abella – 3D карта (прототип)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  :root{--ink:#313131;--muted:#767676;--acc:#ffbd47;--acc2:#f2a81d;--bg:#ffffff;--line:#e6e4dd}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#f3f2ed;font-family:Inter,system-ui,sans-serif;color:var(--ink);-webkit-tap-highlight-color:transparent}
+  #map{position:fixed;inset:0}
+  .top{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 12px);display:flex;align-items:center;gap:8px;z-index:5;pointer-events:none}
+  .logo{pointer-events:auto;background:#fff;border-radius:14px;padding:8px 12px;font:700 15px/1 Inter,sans-serif;letter-spacing:.06em;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+  .logo b{color:var(--acc2)}
+  .tag{pointer-events:auto;margin-left:auto;background:rgba(255,255,255,.92);border-radius:999px;padding:7px 11px;font-size:12px;color:var(--muted);box-shadow:0 4px 16px rgba(0,0,0,.1)}
+  .ctl{position:fixed;right:12px;top:calc(env(safe-area-inset-top,0px) + 70px);display:flex;flex-direction:column;gap:8px;z-index:5}
+  .ctl button{width:46px;height:46px;border:0;border-radius:50%;background:#fff;color:var(--ink);font:700 14px/1 Inter,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.14);cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .ctl button.on{background:var(--acc);color:#fff}
+  .ctl svg{width:22px;height:22px}
+  .hint{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:5;background:rgba(255,255,255,.95);border-radius:16px;padding:12px 14px;font-size:13px;line-height:1.4;box-shadow:0 6px 24px rgba(0,0,0,.14)}
+  .hint b{font-weight:600}
+  .hint .x{float:right;border:0;background:none;font-size:18px;line-height:1;color:var(--muted);cursor:pointer;margin:-2px -4px 0 8px}
+  .card{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:6;background:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 8px 28px rgba(0,0,0,.18);display:none}
+  .card.show{display:block}
+  .card h3{margin:0 0 4px;font-size:17px}
+  .card p{margin:0;color:var(--muted);font-size:13px}
+  .card .row{display:flex;gap:8px;margin-top:12px}
+  .card a,.card button{flex:1;height:40px;border-radius:12px;border:0;font:600 13px/40px Inter,sans-serif;text-align:center;text-decoration:none;cursor:pointer}
+  .card a{background:var(--acc);color:#fff}
+  .card button{background:#f3f2ed;color:var(--ink)}
+  .pin{position:relative;width:38px;height:38px;border-radius:50%;background:#fff;border:2.5px solid var(--acc);display:flex;align-items:center;justify-content:center;font:700 12px/1 Inter,sans-serif;color:var(--ink);box-shadow:0 3px 10px rgba(0,0,0,.25);transform:translateY(50%)}
+  .pin.sel{background:var(--acc);color:#fff}
+  .grp{width:46px;height:46px;border-radius:50%;background:var(--acc);color:#fff;display:flex;align-items:center;justify-content:center;font:700 14px/1 Inter,sans-serif;box-shadow:0 0 0 6px rgba(255,189,71,.35),0 4px 12px rgba(0,0,0,.25);transform:translateY(50%)}
+  .err{position:fixed;inset:auto 12px 50% 12px;z-index:9;background:#fff;border-radius:16px;padding:16px;font-size:14px;box-shadow:0 8px 28px rgba(0,0,0,.18)}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="top"><div class="logo"><b>A</b>BELLA</div><div class="tag">Прототип · 3D карта на Google</div></div>
+<div class="ctl">
+  <button id="b3d" title="3D / 2D">3D</button>
+  <button id="bl" title="Завърти наляво"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/></svg></button>
+  <button id="br" title="Завърти надясно"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/></svg></button>
+  <button id="bn" title="Север горе"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l5 16-5-4-5 4z"/></svg></button>
+</div>
+<div class="hint" id="hint"><button class="x" id="hx" aria-label="Затвори">×</button><b>Как се ползва:</b> натиснете пин – картата лети до сградата в 3D. С два пръста: <b>плъзгане нагоре/надолу</b> накланя, <b>завъртане</b> върти картата. Бутоните вдясно правят същото.</div>
+<div class="card" id="card"><h3 id="cn"></h3><p id="cm"></p><div class="row"><button id="cb">Назад</button><a id="cl" target="_blank" rel="noopener">Виж на abella.bg</a></div></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.5.3/dist/index.min.js"></script>
+<script>
+/* Прототип: истинската векторна карта на Google (наклон, завъртане, 3D сгради) с обектите от demo.abella.bg.
+   Ползва Map ID „DEMO_MAP_ID“ на Google – за истинската версия ще трябва наш Map ID със стил „Abella“. */
+const KEY = window.ABELLA_GMAPS_KEY || '';
+const $ = s => document.querySelector(s);
+if (!KEY) { document.body.insertAdjacentHTML('beforeend', '<div class="err">Липсва ключ за Google Maps в config.js.</div>'); }
+else {
+  window.gm_authFailure = () => document.body.insertAdjacentHTML('beforeend', '<div class="err">Google отказа ключа за този адрес. Проверете дали адресът е добавен в „Website restrictions“ на ключа (промяната важи до 5 минути).</div>');
+  window.__g3d = init;
+  const s = document.createElement('script');
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(KEY)}&v=weekly&language=bg&region=BG&loading=async&libraries=marker&callback=__g3d`;
+  document.head.append(s);
+}
+
+async function init() {
+  const {Map, RenderingType} = google.maps;
+  const {AdvancedMarkerElement} = google.maps.marker;
+  const map = new Map($('#map'), {
+    mapId: 'DEMO_MAP_ID', renderingType: RenderingType.VECTOR,
+    center: {lat: 42.6865, lng: 23.3238}, zoom: 12.3, tilt: 0, heading: 0,
+    disableDefaultUI: true, gestureHandling: 'greedy', clickableIcons: false,
+    tiltInteractionEnabled: true, headingInteractionEnabled: true,
+  });
+  window.g3dMap = map;
+
+  const data = await fetch('assets/data.json').then(r => r.json());
+  const free = units => units.filter(u => /свобод/i.test(u[8] || '')).length;
+  const items = data.B.map(([id, name, lat, lng, hood, act16, label, url, units]) => ({id, name, lat, lng, hood, stage: label || 'В строеж', url, n: free(units || [])}));
+
+  let selEl = null;
+  const markers = items.map(b => {
+    const el = document.createElement('div'); el.className = 'pin'; el.textContent = b.n || '·';
+    const m = new AdvancedMarkerElement({position: {lat: b.lat, lng: b.lng}, content: el, title: b.name});
+    m.addListener('gmp-click', () => openB(b, el));
+    return m;
+  });
+  new markerClusterer.MarkerClusterer({map, markers, renderer: {
+    render: ({count, position}) => { const el = document.createElement('div'); el.className = 'grp'; el.textContent = count; return new AdvancedMarkerElement({position, content: el, zIndex: 1000 + count}); }
+  }});
+
+  const fly = (to, ms = 1600) => { /* smooth camera move between two views */
+    const from = {lat: map.getCenter().lat(), lng: map.getCenter().lng(), zoom: map.getZoom(), tilt: map.getTilt() || 0, heading: map.getHeading() || 0};
+    let dh = ((to.heading ?? from.heading) - from.heading + 540) % 360 - 180;
+    const t0 = performance.now(), ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const step = now => {
+      const k = ease(Math.min(1, (now - t0) / ms)), L = (a, b) => a + (b - a) * k;
+      map.moveCamera({center: {lat: L(from.lat, to.lat ?? from.lat), lng: L(from.lng, to.lng ?? from.lng)}, zoom: L(from.zoom, to.zoom ?? from.zoom), tilt: L(from.tilt, to.tilt ?? from.tilt), heading: from.heading + dh * k});
+      if (k < 1) requestAnimationFrame(step); else sync();
+    };
+    requestAnimationFrame(step);
+  };
+  const sync = () => $('#b3d').classList.toggle('on', (map.getTilt() || 0) > 5);
+  map.addListener('tilt_changed', sync);
+
+  let back = null;
+  function openB(b, el) {
+    if (selEl) selEl.classList.remove('sel'); selEl = el; el.classList.add('sel');
+    back = back || {lat: map.getCenter().lat(), lng: map.getCenter().lng(), zoom: map.getZoom(), tilt: map.getTilt() || 0, heading: map.getHeading() || 0};
+    $('#hint').style.display = 'none';
+    $('#cn').textContent = b.name; $('#cm').textContent = `${b.hood} · ${b.stage} · ${b.n} свободни`;
+    $('#cl').href = 'https://abella.bg' + b.url; $('#card').classList.add('show');
+    fly({lat: b.lat, lng: b.lng, zoom: 18.2, tilt: 62, heading: (map.getHeading() || 0) + 35});
+  }
+  $('#cb').onclick = () => { $('#card').classList.remove('show'); if (selEl) selEl.classList.remove('sel'); selEl = null; if (back) fly(back, 1300); back = null; };
+  $('#b3d').onclick = () => { const on = (map.getTilt() || 0) > 5; fly(on ? {tilt: 0} : {tilt: 60, zoom: Math.max(map.getZoom(), 17)}, 1100); };
+  $('#bl').onclick = () => fly({heading: (map.getHeading() || 0) - 45}, 700);
+  $('#br').onclick = () => fly({heading: (map.getHeading() || 0) + 45}, 700);
+  $('#bn').onclick = () => fly({heading: 0}, 700);
+  $('#hx').onclick = () => $('#hint').style.display = 'none';
+}
+</script>
+</body>
+</html>

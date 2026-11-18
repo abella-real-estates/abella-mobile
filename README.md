@@ -4,6 +4,7 @@
 
 - Страницата за телефон: https://abella-real-estates.github.io/abella-mobile/
 - Дизайн панелът: https://abella-real-estates.github.io/abella-mobile/panel.html
+- 3D карта на Google (прототип): https://abella-real-estates.github.io/abella-mobile/g3d.html
 
 Ключът за Google Maps е в `config.js`. Ако е празен, страницата показва собствената нарисувана карта на София.
 
