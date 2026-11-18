@@ -1606,6 +1606,8 @@ img.mv-ava{display:block;object-fit:cover;object-position:50% 20%;background:#f4
 html.gnative #map{background:var(--land)}
 html.gnative #map .gm-style-cc,html.gnative #map .gmnoprint{opacity:.75}
 html.gnative #map .gm-mk .ml-group,html.gnative #map .gm-mk .ml-photo,html.gnative #map .gm-mk button{pointer-events:auto;cursor:pointer}
+/* 18.11c the home menu fits the phone – nothing left to scroll */
+.screen.home.fit-lock .fm-scroll{overflow-y:hidden!important;overscroll-behavior:none}
 
 /* Map labels */
 .lbl-wrap{width:0!important;height:0!important;background:none;border:0}
@@ -3559,7 +3561,7 @@ const heroName = id => id === 'map' ? 'картата' : `снимката „${
 function loadProf() { const pr = S.hProf[homeHeroId()] || {}; for (const k of PK) S['h' + k] = k in pr ? pr[k] : DEF['h' + k]; }
 function saveProf() { const o = {}; for (const k of PK) o[k] = S['h' + k]; S.hProf[homeHeroId()] = o; }
 function homeLook() { if (typeof advLook === 'function') advLook(); if (typeof moreLook === 'function') moreLook(); const sc = $('#screen'); sc.classList.toggle('logo-color', S.hLogo === 'color'); sc.style.setProperty('--htop', S.hTop + 'px'); sc.style.setProperty('--hside', S.hSide + 'px'); sc.style.setProperty('--h-mtop', S.hMTop + 'px'); sc.style.setProperty('--h-mbot', S.hMBot + 'px'); const n = saved.size, em = $('#h-saved em'); if (em) { em.hidden = !n; em.textContent = n; } }
-function enterHome() {
+function enterHome() { requestAnimationFrame(() => requestAnimationFrame(() => typeof cardLock === 'function' && cardLock()));
   if (ML.home) return;
   tell('nav', 'home');
   if (fmAnim) { fmAnim.forEach(a => a.cancel()); fmAnim = null; }
@@ -3654,7 +3656,9 @@ function dealUI() { const rent = D.deal === 'rent', bs = $$('.fm-type button'); 
   if (typeof moreOn !== 'undefined' && moreOn) return;
   [[bs[0], !rent], [bs[1], rent]].forEach(([b, on]) => { b.classList.toggle('on', on); b.setAttribute('aria-selected', String(on)); }); }
 /* 16.11: the search card keeps one height on Продажба, Наемане and Услуги – the height of the Продажба form (or the screen, if taller) */
-function cardLock() { const c = $('.fm-card'), sc = $('#screen'); if (!c || !ML.home || moreOn || D.deal === 'rent' || $('#fm-advanced') && !$('#fm-advanced').hidden) return; sc.style.removeProperty('--card-min'); fillLook(c, sc); sc.style.setProperty('--card-min', Math.ceil(natH(c)) + 'px'); }
+function cardLock() { const c = $('.fm-card'), sc = $('#screen'); if (!c || !ML.home || moreOn || D.deal === 'rent' || $('#fm-advanced') && !$('#fm-advanced').hidden) return; sc.style.removeProperty('--card-min'); fillLook(c, sc); sc.style.setProperty('--card-min', Math.ceil(natH(c)) + 'px'); fitLock(); }
+/* 18.11: on the home screen (menu not expanded) a few left-over pixels must not make the page scroll */
+function fitLock() { const scr = $('.fm-scroll'), sc = $('#screen'); if (!scr) return; sc.classList.remove('fit-lock'); requestAnimationFrame(() => { const adv = $('#fm-advanced'), open = adv && !adv.hidden; const over = scr.scrollHeight - scr.clientHeight; sc.classList.toggle('fit-lock', !!ML.home && !open && !moreOn && over <= 24); if (sc.classList.contains('fit-lock')) scr.scrollTop = 0; }); }
 /* 16.11: the free room of a tall phone goes into taller fields / bigger gaps (Начална страница → Отстояния и запълване) */
 function natH(c) { /* the height the form really needs (without the stretched room) */
   const cs = getComputedStyle(c), kids = [...c.children].filter(x => { const s = getComputedStyle(x); return s.display !== 'none' && s.position !== 'absolute'; });
@@ -3669,10 +3673,20 @@ function fillLook(c, sc) {
   let free = Math.max(c.getBoundingClientRect().height, avail) - nat;
   const F = 7, G = 8, B0 = 40, G0 = 8, fCap = Math.max(0, S.hFMax - B0), gCap = Math.max(0, S.hGMax - G0);
   let df = 0, dg = 0, db = 0;
-  if (avail - nat < -2) { /* a short phone: the menu does not fit – fields and gaps shrink a little (down to 34 px / 5 px) before anything scrolls */
-    const need = nat - avail, dfS = Math.min(6, need * .6 / F), dgS = Math.min(4, Math.max(0, need - dfS * F) / G), up = Math.min(36, Math.max(0, need - dfS * F - dgS * G));
+  if (avail - nat < -2) { /* 18.11: a short phone – the menu must fit without scrolling. Shrink in this order: fields (to 32 px), gaps (to 3 px),
+       the search button (to 40 px), the text (to 13 px) – and only then move the menu up, never closer than 10 px under the logo */
+    let need = nat - avail + 2;
+    const dfS = Math.min(8, need / F); need -= dfS * F;
+    const dgS = Math.max(0, Math.min(5, need / G)); need -= dgS * G;
+    const dbS = Math.max(0, Math.min(6, need)); need -= dbS;
     st.setProperty('--f-ctl', (B0 - dfS).toFixed(1) + 'px'); st.setProperty('--f-gap', (G0 - dgS).toFixed(1) + 'px');
-    if (up > 0) st.setProperty('--h-mtop', Math.max(40, S.hMTop - up) + 'px'); /* …and only then the menu moves up a little */
+    if (dbS) st.setProperty('--f-btn', (46 - dbS).toFixed(1) + 'px');
+    if (dfS > 4) st.setProperty('--f-fs', '13px');
+    if (need > 0) {
+      const lg = $('.logo', sc), lb = lg && lg.getBoundingClientRect().height ? lg.getBoundingClientRect().bottom - scr.getBoundingClientRect().top : 0;
+      const minTop = Math.max(40, Math.ceil(lb + 10)), up = Math.min(Math.max(0, S.hMTop - minTop), need);
+      if (up > 0) st.setProperty('--h-mtop', (S.hMTop - up) + 'px');
+    }
     return; }
   if (S.hFill === 'button' || free <= 2) return;
   if (S.hFill === 'fields') df = Math.min(fCap, free / F);
@@ -4915,6 +4929,8 @@ function layout() { if (typeof cardLock === 'function') requestAnimationFrame(()
   setTimeout(() => { map.invalidateSize(); renderMarkers(); const sc = railScroller(); sc && railEffect(sc); }, 30);
 }
 let rT; addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(layout, 120); });
+if (window.visualViewport) visualViewport.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(layout, 120); }); /* the phone's address bar shows / hides */
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => typeof cardLock === 'function' && cardLock());
 let tT;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tT); tT = setTimeout(() => t.classList.remove('show'), 2600); }
 
