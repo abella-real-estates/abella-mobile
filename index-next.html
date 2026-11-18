@@ -2657,7 +2657,7 @@ class GMapLL { /* Leaflet-like map over google.maps.Map (only what this page use
       wrap.className = 'leaflet-marker-pane gm-mk' + (l.options.pane === 'labels' ? ' gm-lbl' : ''); ic.className = 'leaflet-marker-icon ' + (io.className || '');
       if (io.html instanceof Element) ic.append(io.html); else ic.innerHTML = io.html || '';
       wrap.append(ic); l._icon = ic;
-      if (l.options.interactive !== false) ic.addEventListener('click', ev => { this._mkAt = Date.now(); ev.stopPropagation(); l.fire('click', {originalEvent: ev, latlng: l.getLatLng()}); });
+      if (l.options.interactive !== false) { ic.addEventListener('pointerdown', () => { this._mkAt = Date.now(); }); ic.addEventListener('click', ev => { this._mkAt = Date.now(); ev.stopPropagation(); l.fire('click', {originalEvent: ev, latlng: l.getLatLng()}); }); }
       const ll = l.getLatLng();
       l._gObj = new C.marker.AdvancedMarkerElement({map: this._g, position: {lat: ll.lat, lng: ll.lng}, content: wrap, zIndex: 1000 + (l.options.zIndexOffset || 0)});
     } else if (l instanceof L.CircleMarker) {
